@@ -1,0 +1,108 @@
+<div class="story-container">
+  <div class="story-card" data-user-id="1">
+    <img src="/media/stories/user1.jpg" alt="Story Image" />
+    <div class="story-user">Username</div>
+  </div>
+  <div class="story-card" data-user-id="2">
+    <img src="/media/stories/user2.jpg" alt="Story Image" />
+    <div class="story-user">Another User</div>
+  </div>
+  '
+  <div class="story-card" data-user-id="2">
+    <img src="/media/stories/user2.jpg" alt="Story Image" />
+    <div class="story-user">Another User</div>
+  </div>
+  <div class="story-card" data-user-id="2">
+    <img src="/media/stories/user2.jpg" alt="Story Image" />
+    <div class="story-user">Another User</div>
+  </div>
+  <!-- Add more story-card elements -->
+</div>
+<style>
+  .story-container {
+    position: relative;
+    width: 320px;
+    height: 520px;
+    margin: auto;
+    overflow: hidden;
+  }
+
+  .story-card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .story-card img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .story-user {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    position: absolute;
+    bottom: 0;
+  }
+</style>
+<script>
+const container = document.querySelector('.story-container');
+let startX = 0;
+let currentCard = null;
+
+function handleSwipe(card, direction) {
+  const userId = card.dataset.userId;
+  if (direction === 'right') {
+    console.log("❤️ Loved story from user", userId);
+    // Send a "like" via WebSocket or AJAX
+  } else {
+    console.log("❌ Disliked story from user", userId);
+    // Send a "dislike" via WebSocket or AJAX
+  }
+  card.remove(); // Remove the story
+}
+
+container.addEventListener('touchstart', (e) => {
+  startX = e.touches[0].clientX;
+  currentCard = e.target.closest('.story-card');
+});
+
+container.addEventListener('touchend', (e) => {
+  if (!currentCard) return;
+  const endX = e.changedTouches[0].clientX;
+  const diffX = endX - startX;
+
+  if (diffX > 100) {
+    // Swipe Right
+    currentCard.style.transform = 'translateX(100%) rotate(15deg)';
+    handleSwipe(currentCard, 'right');
+  } else if (diffX < -100) {
+    // Swipe Left
+    currentCard.style.transform = 'translateX(-100%) rotate(-15deg)';
+    handleSwipe(currentCard, 'left');
+  } else {
+    // Reset if not enough swipe
+    currentCard.style.transform = 'translateX(0)';
+  }
+
+  currentCard = null;
+});
+</script>
+

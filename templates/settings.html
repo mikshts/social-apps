@@ -133,15 +133,27 @@
                       {% if errors.height %}<div class="error-message">{{ errors.height }}</div>{% endif %}
                   </div>
 
-                  <div class="form-group">
-                      <label for="id_weight">Weight:</label>
-                      <div class="input-with-unit">
-                          <input type="number" name="weight" id="id_weight" value="{{ current_values.weight|default:'' }}" step="0.1" min="30" max="500" placeholder="150">
-                          <span class="unit">lbs</span>
-                      </div>
-                      <small class="help-text">Enter weight in pounds (30-500)</small>
-                      {% if errors.weight %}<div class="error-message">{{ errors.weight }}</div>{% endif %}
+                 <div class="form-group">
+                    <label for="id_weight">Weight:</label>
+                    <div class="input-with-unit">
+                      <input 
+                        type="number"
+                        name="weight"
+                        id="id_weight"
+                        value="{{ current_values.weight|default:'' }}"
+                        step="0.1"
+                        min="30"
+                        max="500"
+                        placeholder="e.g. 55.5"
+                      >
+                      <span class="unit">kg</span>
+                    </div>
+                    <small class="help-text">Enter weight in kilograms (30–500 kg)</small>
+                    {% if errors.weight %}
+                      <div class="error-message">{{ errors.weight }}</div>
+                    {% endif %}
                   </div>
+
 
                   <div class="form-group">
                       <label for="id_birthday">Birthday:</label>
@@ -318,7 +330,22 @@
             </div>
           </div>
       </div>
-      
+      <!-- Logout Confirmation Modal -->
+      <div id="logoutAccountModal" class="my-custom-modal">
+        <div class="my-custom-modal-content">
+          <span class="my-custom-close-button" onclick="closeMyCustomModal('logoutAccountModal')">&times;</span>
+          <h2>Confirm Logout</h2>
+          <p>Are you sure you want to log out?</p>
+          <form action="{% url 'logout_view' %}" method="POST">
+            {% csrf_token %}
+            <div class="my-custom-modal-buttons">
+              <button type="submit" class="my-custom-btn my-custom-btn-confirm">Log Out</button>
+              <button type="button" class="my-custom-btn my-custom-btn-cancel" onclick="closeMyCustomModal('logoutAccountModal')">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
 
       <section>
         <h2>Account Actions</h2>
@@ -352,15 +379,16 @@
           </button>
         </form>
 
-        <form action="{% url 'logout_view' %}" method="POST">
-          {% csrf_token %}
+        <form id="logoutMainForm" style="margin-bottom: 1rem">
           <button
+            type="button"
             class="btn"
             style="background: var(--color-success); margin-top: 1rem"
-            onclick="return confirm('Are you sure you want to log out?')">
+            onclick="openMyCustomModal('logoutAccountModal')">
             Log Out
           </button>
         </form>
+
       </section>
     </main>
   </body>

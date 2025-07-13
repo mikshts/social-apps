@@ -17,13 +17,12 @@ function closeCommentPopup(postId) {
   document.body.style.overflow = "";
 }
 
-// Close modal when clicking background
-document.querySelectorAll("[id^='commentModal-']").forEach((modal) => {
-  modal.addEventListener("click", function (e) {
-    if (e.target === modal) {
-      closeCommentPopup(modal.id.replace("commentModal-", ""));
-    }
-  });
+document.addEventListener("click", function (e) {
+  const modal = e.target.closest(".feed-modal");
+  if (modal && e.target === modal) {
+    const postId = modal.id.replace("commentModal-", "");
+    closeCommentPopup(postId);
+  }
 });
 
 // ------------------ SLIDER LOGIC ------------------
@@ -103,7 +102,8 @@ document.addEventListener("DOMContentLoaded", function () {
           `#commentModal-${postId} .modal-all-comments`
         );
         if (commentSection) {
-          const noCommentsMsg = commentSection.querySelector(".no-comments-msg");
+          const noCommentsMsg =
+            commentSection.querySelector(".no-comments-msg");
           if (noCommentsMsg) noCommentsMsg.style.display = "none";
 
           const newComment = document.createElement("div");
@@ -131,7 +131,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const submitBtn = this.querySelector('button[type="submit"]');
       const textInput = this.querySelector('input[name="comment_text"]');
       const commentText = textInput.value.trim();
-      const csrfToken = this.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      const csrfToken = this.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+      ).value;
 
       const btnText = submitBtn.querySelector(".btn-text");
       const btnSpinner = submitBtn.querySelector(".btn-spinner");

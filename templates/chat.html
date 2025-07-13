@@ -1,3 +1,4 @@
+<!-- chat.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -9,27 +10,55 @@
   </head>
   <body>
     <div class="chat-container">
-      <h2>Chat with {{ receiver.username }}</h2>
+      <header class="chat-header">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <img
+            src="{{ receiver.profile.profileimg.url|default:'/static/blank_profile_picture.png' }}"
+            alt="{{ receiver.username }}'s profile photo"
+            style="
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 2px solid white;
+            " />
 
-      <span id="receiverId" style="display: none">{{ receiver.id }}</span>
-      <span id="currentUserId" style="display: none">{{ request.user.id }}</span>
-      <span id="currentUsername" style="display: none">{{ request.user.username }}</span>
+          <h2 style="margin: 0">{{ receiver.username }}</h2>
+        </div>
+      </header>
 
+      <!-- Hidden values for JavaScript -->
+      <span id="receiverId" data-value="{{ receiver.id }}" hidden></span>
+      <span id="currentUserId" data-value="{{ request.user.id }}" hidden></span>
+      <span
+        id="currentUsername"
+        data-value="{{ request.user.username }}"
+        hidden></span>
+
+      <!-- Chat Messages -->
       <div id="chatLog">
         {% for message in past_messages %}
-          <div class="message-bubble {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-            {% if message.sender != request.user %}
-              <span class="sender-name">{{ message.sender.username }}</span>
-            {% endif %}
-            <span class="message-content">{{ message.content }}</span>
-            <span class="timestamp">{{ message.timestamp|date:"H:i" }}</span>
-          </div>
+        <div
+          class="message-bubble {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+          {% if message.sender != request.user %}
+          <span class="sender-name">{{ message.sender.username }}</span>
+          {% endif %}
+          <span class="message-content">{{ message.content }}</span>
+          <span class="timestamp">{{ message.timestamp|date:"H:i" }}</span>
+        </div>
+        {% empty %}
+        <p class="text-muted" id="noMessages">No messages yet. Say hi!</p>
         {% endfor %}
       </div>
 
+      <!-- Message Input -->
       <div class="message-input-area">
-        <input type="text" id="messageInput" placeholder="Type a message" />
-        <button onclick="sendMessage()">Send</button>
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type a message..."
+          autocomplete="off" />
+        <button id="sendBtn">Send</button>
       </div>
     </div>
 

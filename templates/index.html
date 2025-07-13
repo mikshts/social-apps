@@ -3,12 +3,22 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Required meta tags  link rel para logo sang website-->
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bookmark_heart" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=bookmark_heart" />
     <title>{% block title %}PerfectMatch{% endblock %}</title>
     <!-- IconScout CDN -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet" />
+
     <link
       rel="stylesheet"
       href="https://unicons.iconscout.com/release/v2.1.6/css/unicons.css" />
@@ -23,8 +33,14 @@
       href="https://unicons.iconscout.com/release/v2.1.6/css/unicons.css" />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=chat" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_diamond" />
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=chat" />
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&icon_names=chat" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_diamond" />
   </head>
   <body>
     <!--navbar reused -->
@@ -33,32 +49,11 @@
     <!-------------------------------- MAIN ----------------------------------->
     <main>
       <style>
-      .material-symbols-outlined {
-        font-variation-settings:
-        'FILL' 0,
-        'wght' 0,
-        'GRAD' 0,
-        'opsz' 24
-      }
-      </style>
-      <style>
-        .chat-popup {
-          position: fixed;
-          bottom: 1rem;
-          right: 1rem;
-          width: 380px;
-          max-height: 80vh;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-          overflow-y: auto;
-          padding: 1rem;
-          z-index: 9999;
-        }
-        .hidden {
-          display: none;
+        .material-symbols-outlined {
+          font-variation-settings: "FILL" 0, "wght" 0, "GRAD" 0, "opsz" 24;
         }
       </style>
+
       <div class="container">
         <!----------------- LEFT -------------------->
         <div class="left">
@@ -160,14 +155,6 @@
                 </div>
               </div>
               <!--------------- END NOTIFICATION POPUP --------------->
-            </a>
-            <a class="menu-item" id="messages-notifications">
-              <span
-                ><i class="uil uil-envelope-alt"
-                  ><small class="notification-count">6</small></i
-                ></span
-              >
-              <h3>Messages</h3>
             </a>
 
             <a class="menu-item" href="{%url 'bookmarks'%}">
@@ -337,7 +324,6 @@
               <div class="progress-bar">
                 <div class="progress"></div>
               </div>
-
               <div class="story-info">
                 <img
                   src="{%static 'assets/images/maico.jpg'%}"
@@ -430,52 +416,134 @@
             {% for post in posts %} {% include "posts/post_single.html" %}
             {%endfor %}
           </div>
+          <div
+            id="loading-indicator"
+            style="display: none; text-align: center; margin: 1em">
+            <span>Loading...</span>
+          </div>
         </div>
         <!----------------- END OF FEEDS -------------------->
         <!----------------- RIGHT -------------------->
 
         <div class="right">
           <!------- MESSAGES ------->
-          <div class="messages">
-            <div class="heading">
-              <h4>Messages</h4>
-              <i class="uil uil-edit"></i>
-            </div>
-            <!------- SEARCH BAR ------->
-            <div class="search-bar">
-              <i class="uil uil-search"></i>
-              <input
-                type="search"
-                placeholder="Search messages"
-                id="message-search" />
-            </div>
+          <!-- Message Notifications Icon -->
 
-            <!------- MESSAGES CATEGORY ------->
-            <div class="category">
-              <h6 class="active">Primary</h6>
-              <h6>General</h6>
-              <h6 class="message-requests">Requests (7)</h6>
-            </div>
+          <!-- Message Button (Floating Bottom Right) -->
+          <div id="message-float-button" class="menu-item">
+            <i class="uil uil-envelope-alt">
+              <small class="notification-count">6</small>
+            </i>
+            <h3>Messages</h3>
+          </div>
 
-            <div class="message-list">
-              <!------- MESSAGES ------->
-              <div class="message" data-user-id="95">
-                <div class="profile-photo">
-                  <img src="{% static 'assets/images/profile-17.jpg' %}" />
-                </div>
-                <div class="message-body">
-                  <h5>Edem Quist</h5>
-                  <p class="text-muted">Just woke up bruh</p>
-                </div>
+          <div id="chat-section" class="chat-popup hidden">
+            <div class="messages">
+              <div class="heading">
+                <h4>Messages</h4>
+                <i class="uil uil-edit"></i>
               </div>
-            </div>
-            <div id="chat-section" class="chat-popup hidden">
-              <!-- Chat will be loaded here dynamically -->
+
+              <!-- Search Bar -->
+              <div class="search-bar">
+                <i class="uil uil-search"></i>
+                <input
+                  type="search"
+                  placeholder="Search messages"
+                  id="message-search" />
+              </div>
+
+              <!-- Category Tabs -->
+              <div class="category">
+                <h6 class="active">Primary</h6>
+                <h6>General</h6>
+                <h6 class="message-requests">Requests (7)</h6>
+              </div>
+
+              <!-- Message List -->
+              <div class="message-list" id="message-list-container">
+                {% include 'partials/message_list.html' %}
+              </div>
             </div>
           </div>
 
+          <!-- Chat Box Container (When a message is clicked) -->
+
+          <!-- Popup: Chat Window (Initially Hidden) -->
+          <div id="chat-popup" class="chat-popup hidden"></div>
+
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              const chatSection = document.getElementById("chat-section");
+              const chatPopup = document.getElementById("chat-popup");
+
+              // Toggle chat section
+              document
+                .getElementById("message-float-button")
+                .addEventListener("click", () => {
+                  chatSection.classList.toggle("hidden");
+                  chatPopup.classList.add("hidden");
+                });
+
+              // Message list click (event delegation)
+              const messageList = document.getElementById(
+                "message-list-container"
+              );
+              if (messageList) {
+                messageList.addEventListener("click", function (e) {
+                  const messageEl = e.target.closest(".message");
+                  if (messageEl) {
+                    const receiverId = messageEl.dataset.userId;
+                    fetch(`/chat/${receiverId}/`)
+                      .then((res) => res.text())
+                      .then((html) => {
+                        chatPopup.innerHTML = html;
+                        chatPopup.classList.remove("hidden");
+                        chatSection.classList.add("hidden");
+
+                        // Reload chat.js
+                        const oldScript = document.querySelector(
+                          "script[data-chat-script]"
+                        );
+                        if (oldScript) oldScript.remove();
+                        const newScript = document.createElement("script");
+                        newScript.src = "{% static 'assets/js/chat.js' %}";
+                        newScript.setAttribute("data-chat-script", "true");
+                        document.body.appendChild(newScript);
+                      });
+                  }
+                });
+              }
+
+              // Click outside to close
+              document.addEventListener("click", (e) => {
+                if (
+                  !chatSection.contains(e.target) &&
+                  !e.target.closest("#message-float-button")
+                ) {
+                  chatSection.classList.add("hidden");
+                }
+                if (!chatPopup.contains(e.target)) {
+                  chatPopup.classList.add("hidden");
+                }
+              });
+            });
+          </script>
+
           <!------- END OF MESSAGES ------->
           <script>
+            // Toggle Message List Popup
+            document
+              .getElementById("messages-notifications")
+              .addEventListener("click", () => {
+                const chatSection = document.getElementById("chat-section");
+                chatSection.classList.toggle("hidden");
+
+                // Optional: hide chat popup when opening message list
+                document.getElementById("chat-popup").classList.add("hidden");
+              });
+
+            // When a user clicks a message -> load chat dynamically into chat-popup
             document.querySelectorAll(".message").forEach((el) => {
               el.addEventListener("click", function () {
                 const receiverId = this.dataset.userId;
@@ -483,138 +551,91 @@
                 fetch(`/chat/${receiverId}/`)
                   .then((res) => res.text())
                   .then((html) => {
-                    const chatBox = document.getElementById("chat-section");
-                    chatBox.innerHTML = html;
-                    chatBox.classList.remove("hidden");
+                    const chatPopup = document.getElementById("chat-popup");
+                    chatPopup.innerHTML = html;
+                    chatPopup.classList.remove("hidden");
 
-                    // Remove old chat.js script if it exists
-                    const existingScript = document.querySelector(
+                    // Hide message list popup
+                    document
+                      .getElementById("chat-section")
+                      .classList.add("hidden");
+
+                    // Remove old chat.js if exists
+                    const oldScript = document.querySelector(
                       "script[data-chat-script]"
                     );
-                    if (existingScript) existingScript.remove();
+                    if (oldScript) oldScript.remove();
 
-                    // Re-inject chat.js to initialize WebSocket
+                    // Inject chat.js script
                     const script = document.createElement("script");
                     script.src = "{% static 'assets/js/chat.js' %}";
                     script.setAttribute("data-chat-script", "true");
                     document.body.appendChild(script);
                   })
-                  .catch((err) => {
-                    console.error("Failed to load chat:", err);
-                  });
+                  .catch((err) => console.error("Failed to load chat:", err));
               });
             });
           </script>
+
+          {% include "friend_request_index.html" %}
           <script>
-            function openChat(receiverId) {
-              fetch(`/chat/${receiverId}/`)
-                .then((response) => response.text())
-                .then((html) => {
-                  const popup = document.getElementById("chat-popup");
-                  popup.innerHTML = html;
-                  popup.classList.remove("hidden");
+            // Accept or decline friend request
+            document.querySelectorAll(".request").forEach((request) => {
+              const acceptBtn = request.querySelector(".btn-primary");
+              const declineBtn = request.querySelector(
+                ".btn:not(.btn-primary)"
+              );
+              const requestId = request.dataset.requestId;
 
-                  // Re-load the WebSocket JS to connect dynamically
-                  const oldScript = document.querySelector(
-                    "script[data-chat-script]"
-                  );
-                  if (oldScript) oldScript.remove();
-
-                  const script = document.createElement("script");
-                  script.src = "{% static 'assets/js/chat.js' %}";
-                  script.setAttribute("data-chat-script", "true");
-                  document.body.appendChild(script);
+              acceptBtn?.addEventListener("click", () => {
+                fetch(`/friend-request/respond/${requestId}/`, {
+                  method: "POST",
+                  headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  body: "action=accept",
                 })
-                .catch((error) => {
-                  console.error("Chat load failed:", error);
-                });
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.status === "accepted") request.remove();
+                  });
+              });
+
+              declineBtn?.addEventListener("click", () => {
+                fetch(`/friend-request/respond/${requestId}/`, {
+                  method: "POST",
+                  headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  body: "action=decline",
+                })
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.status === "declined") request.remove();
+                  });
+              });
+            });
+
+            // CSRF helper
+            function getCookie(name) {
+              let cookieValue = null;
+              if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  if (cookie.substring(0, name.length + 1) === name + "=") {
+                    cookieValue = decodeURIComponent(
+                      cookie.substring(name.length + 1)
+                    );
+                    break;
+                  }
+                }
+              }
+              return cookieValue;
             }
           </script>
-
-          <!------- FRIEND REQUEST ------->
-          <div class="friend-requests">
-            <h4>Requests</h4>
-            <!--request #-->
-            <div class="request">
-              <div class="info">
-                <div class="profile-photo">
-                  <img src="{%static 'assets/images/profile-20.jpg'%}" />
-                </div>
-                <div>
-                  <h5>Hajia Bintu</h5>
-                  <p class="text-muted">8 mutual friends</p>
-                </div>
-              </div>
-              <div class="action">
-                <button class="btn btn-primary">Accept</button>
-                <button class="btn">Decline</button>
-              </div>
-            </div>
-            <!--request #-->
-            <div class="request">
-              <div class="info">
-                <div class="profile-photo">
-                  <img src="{%static 'assets/images/profile-5.jpg'%}" />
-                </div>
-                <div>
-                  <h5>Hajia Bintu</h5>
-                  <p class="text-muted">8 mutual friends</p>
-                </div>
-              </div>
-              <div class="action">
-                <button class="btn btn-primary">Accept</button>
-                <button class="btn">Decline</button>
-              </div>
-            </div>
-            <!--request #-->
-            <div class="request">
-              <div class="info">
-                <div class="profile-photo">
-                  <img src="{%static 'assets/images/profile-2.jpg'%}" />
-                </div>
-                <div>
-                  <h5>Hajia Bintu</h5>
-                  <p class="text-muted">8 mutual friends</p>
-                </div>
-              </div>
-              <div class="action">
-                <button class="btn btn-primary">Accept</button>
-                <button class="btn">Decline</button>
-              </div>
-            </div>
-            <!--request #-->
-            <div class="request">
-              <div class="info">
-                <div class="profile-photo">
-                  <img src="{%static 'assets/images/profile-15.jpg'%}" />
-                </div>
-                <div>
-                  <h5>Hajia Bintu</h5>
-                  <p class="text-muted">8 mutual friends</p>
-                </div>
-              </div>
-              <div class="action">
-                <button class="btn btn-primary">Accept</button>
-                <button class="btn">Decline</button>
-              </div>
-            </div>
-            <!--request #-->
-            <div class="request">
-              <div class="info">
-                <div class="profile-photo">
-                  <img src="{%static 'assets/images/profile-17.jpg'%}" />
-                </div>
-                <div>
-                  <h5>Hajia Bintu</h5>
-                  <p class="text-muted">8 mutual friends</p>
-                </div>
-              </div>
-              <div class="action">
-                <button class="btn btn-primary">Accept</button>
-                <button class="btn">Decline</button>
-              </div>
-            </div>
-          </div>
         </div>
         <!----------------- END OF RIGHT -------------------->
       </div>
@@ -717,6 +738,7 @@
   <script src="{%static 'assets/js/new.js'%}"></script>
   <script src="{%static 'assets/js/stories.js'%}"></script>
   <script src="{%static 'assets/js/comment.js'%}"></script>
+
   <script>
     const storyImages = [
       "{% static 'assets/images/maico.jpg' %}",
@@ -820,21 +842,21 @@
       });
 
       // Diamond Quantity Control for Purchase Modal
-        incrementDiamondsBtn.on('click', function () {
-          let currentDiamonds = parseInt(diamondAmountInput.val()) || 0;
-          let newDiamonds = currentDiamonds + 10;
+      incrementDiamondsBtn.on("click", function () {
+        let currentDiamonds = parseInt(diamondAmountInput.val()) || 0;
+        let newDiamonds = currentDiamonds + 10;
+        diamondAmountInput.val(newDiamonds);
+        updateDiamondDisplay();
+      });
+
+      decrementDiamondsBtn.on("click", function () {
+        let currentDiamonds = parseInt(diamondAmountInput.val()) || 10;
+        let newDiamonds = currentDiamonds - 10;
+        if (newDiamonds >= 10) {
           diamondAmountInput.val(newDiamonds);
           updateDiamondDisplay();
-        });
-
-        decrementDiamondsBtn.on('click', function () {
-          let currentDiamonds = parseInt(diamondAmountInput.val()) || 10;
-          let newDiamonds = currentDiamonds - 10;
-          if (newDiamonds >= 10) {
-            diamondAmountInput.val(newDiamonds);
-            updateDiamondDisplay();
-          }
-        });
+        }
+      });
 
       // AJAX Payment Integration for Purchase Modal
       buyDiamondsNowButton.on("click", function () {
@@ -889,34 +911,4 @@
   </script>
 
   <!--bookmarks js-->
-  <script>
-    function toggleBookmark(postId) {
-      fetch("/toggle_bookmark/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: new URLSearchParams({ post_id: postId }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          const icon = document.querySelector(
-            `#like-btn-${postId} ~ .bookmark i`
-          );
-          if (data.status === "added") {
-            icon.classList.add("bookmarked");
-          } else if (data.status === "removed") {
-            icon.classList.remove("bookmarked");
-          }
-        });
-    }
-  </script>
-  <script>
-    // When going to bookmarks
-    document.getElementById("goToBookmarks").addEventListener("click", () => {
-      history.pushState({ page: "index" }, "", "index.html"); // saves index.html to history
-      window.location.href = "bookmarks.html";
-    });
-  </script>
 </html>

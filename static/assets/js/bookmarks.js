@@ -29,10 +29,24 @@ function filterCards(filter) {
 
   // Show or hide "noBookmarks"
   const visible = [...cards].some((card) => card.style.display !== "none");
-  document.getElementById("noBookmarks").style.display = visible ? "none" : "block";
+  document.getElementById("noBookmarks").style.display = visible
+    ? "none"
+    : "block";
 }
-
 
 // Initial load - filtering to 'all' for this example
 filterCards("all");
+function toggleComments(postId, totalCount) {
+  const hiddenComments = document.querySelectorAll(`.hidden-comment-${postId}`);
+  const toggleBtn = document.getElementById(`toggle-comments-${postId}`);
 
+  hiddenComments.forEach((comment) => {
+    comment.classList.toggle("hidden");
+  });
+
+  if (hiddenComments[0].classList.contains("hidden")) {
+    toggleBtn.textContent = `View all ${totalCount} comments`;
+  } else {
+    toggleBtn.textContent = "Hide comments";
+  }
+}

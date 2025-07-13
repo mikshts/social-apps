@@ -1,11 +1,27 @@
-/* Existing CSS (no changes) */
-body {
-  font-family: "Segoe UI", sans-serif;
-  background-color: #f8f0ff;
-  margin: 0;
-  padding: 20px;
+/* ADDED: Styles for the survey completion banner */
+.survey-completion-banner {
+  background-color: #e0f2f7; /* Light blue background */
+  color: #01579b; /* Darker blue text */
+  padding: 15px 20px;
+  margin: 20px auto; /* Centers the banner horizontally */
+  max-width: 700px; /* Matches your survey container width */
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex; /* For aligning icon and text */
+  align-items: center;
+  gap: 10px; /* Space between icon and text */
+  font-size: 1.1em;
+  font-weight: 500;
+  /* !!! IMPORTANT: Adjust this value based on your actual navbar height + desired spacing !!! */
+  margin-top: 100px; /* Example: If navbar is 70px tall, 70px + 30px gap = 100px */
 }
 
+.survey-completion-banner .material-symbols-outlined {
+  font-size: 28px; /* Adjust icon size */
+  color: #0288d1; /* A slightly different shade for the icon */
+}
+
+/* MODIFIED: Adjusted survey-container margin-top to follow the banner */
 .survey-container {
   max-width: 700px;
   margin: 0 auto;
@@ -13,7 +29,7 @@ body {
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 0 15px rgba(142, 68, 173, 0.2);
-  margin-top: 70px;
+  margin-top: 20px; /* This margin provides space between the banner and the survey content */
 }
 
 h3 {
@@ -26,7 +42,7 @@ h3 {
 
 .form-page.active {
   display: block;
-  animation: fadeIn 0.4s ease-in-out;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -87,7 +103,9 @@ h3 {
   /* Set a height that accommodates exactly three rows of checkboxes + gaps */
   /* Calculation: (Label height + vertical padding + border) * 3 + (gap between rows * 2) */
   /* Assuming label height approx 36px (8px padding top/bottom + 2px border top/bottom) */
-  height: calc((36px + 10px) * 3 + 10px * 2); /* Approx. 168px - adjust 36px if your label's natural height is different */
+  height: calc(
+    (36px + 10px) * 3 + 10px * 2
+  ); /* Approx. 168px - adjust 36px if your label's natural height is different */
   display: flex; /* Helps ensure inner flex container behaves as expected */
   align-items: flex-start; /* Align content to the top within the scrollable area */
 }
@@ -134,4 +152,4 @@ h3 {
   color: white;
   font-weight: bold;
   box-shadow: 0 0 5px rgba(142, 68, 173, 0.5);
-}
+} 

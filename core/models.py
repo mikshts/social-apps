@@ -30,13 +30,16 @@ class Profile(models.Model):
     age = models.PositiveIntegerField(null=True, blank=True)
     relation = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
-    height = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
-    weight = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    height = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    weight = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
     birthday = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     deactivation_expiry = models.DateTimeField(null=True, blank=True)
     active_status_date = models.DateTimeField(null=True, blank=True)
     is_online = models.BooleanField(default=False)
+    cover_photo = models.ImageField(upload_to='cover_photos/', default='blank_profile_picture.png', blank=True)
+    friends = models.ManyToManyField("self", symmetrical=True, blank=True)
+
 
 
     def __str__(self):
@@ -191,3 +194,20 @@ class Bookmark(models.Model):
 
     def __str__(self):
         return f"{self.user.username} bookmarked {self.post.id}"
+
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    is_accepted = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self):
+        return f"{self.from_user.username} → {self.to_user.username} ({'Accepted' if self.is_accepted else 'Pending'})"

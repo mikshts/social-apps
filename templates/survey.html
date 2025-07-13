@@ -13,8 +13,13 @@
   </head>
 
   <body>
-    {%include 'navbar.html'%}
-
+    {%include 'survey_navbar.html'%}
+    <div class="survey-completion-banner">
+      <p>
+        <span class="material-symbols-outlined"> info </span>
+        Complete this survey to enable matching and discover your PerfectMatch!
+      </p>
+    </div>
     <div class="survey-container">
       <form id="surveyForm" method="POST" action="{% url 'survey' %}">
         {% csrf_token %}
@@ -345,9 +350,9 @@
                   type="checkbox"
                   id="hobby-gambling"
                   name="hobbies"
-                  value="Reading" />
+                  value="Gambling" />
                 <label for="hobby-gambling">Gambling🎲</label>
-              </div> 
+              </div>
               <div class="custom-checkbox">
                 <input
                   type="checkbox"
@@ -1215,7 +1220,9 @@
         </div>
       </form>
     </div>
+    {% include 'footer.html' %}
   </body>
+
   <script>
     const pages = document.querySelectorAll(".form-page");
     const indicator = document.getElementById("progressIndicator");

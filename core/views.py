@@ -54,7 +54,20 @@ def index(request):
         post.liked_users = [like.user for like in post.likes.select_related('user')[:3]]
         post.user_liked = post.likes.filter(user=request.user).exists()
     return render(request, 'index.html', {'posts': posts})
+from django.shortcuts import render
 
+def survey_services(request):
+    return render(request, 'survey_services.html')
+
+
+def survey_terms(request):
+    return render(request, 'survey_terms.html')
+
+def survey_contact(request):
+    return render(request, 'survey_contact.html')
+
+def survey_whydata(request):
+    return render(request, 'survey_whydata.html')
 
 
 def signup(request):
@@ -99,7 +112,9 @@ def signup(request):
     
 
 
-def signin(request):
+
+
+def signin(request): 
     if request.method == 'POST':
         signin_username = request.POST.get('signin-username')
         signin_password = request.POST.get('signin-password')
@@ -275,27 +290,7 @@ def deactivate_account(request):
 #### delete if needed
 # views.py
 
-
-@login_required(login_url='signin')
-def add_comment(request, post_id):
-    # This view will just validate CSRF and return OK
-    if request.method == 'POST':
-        return JsonResponse({'status': 'validated'})
-    return JsonResponse({'error': 'Invalid request'}, status=400)
- 
- 
-# List all posts
-def post_list(request):
-    posts = Post.objects.all().order_by('-created_at')
-    return render(request, 'post_list.html', {'posts': posts})
-
-
-# View a single post
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    comments = post.comments.all().order_by('created_at')
-    return render(request, 'posts/post_detail.html', {'post': post, 'comments': comments})
-
+#-----------------------------------------------for posts-----------------------------------------------------
 # Create a post from standalone page
 @login_required(login_url='signin')
 def create_post(request):
@@ -313,9 +308,26 @@ def create_post(request):
             return redirect('index', post_id=post.id)
         else:
             messages.error(request, "Content cannot be empty.")
-    return render(request, 'posts/create_post.html')
+    return render(request, 'posts/index.html')
 
+# List all posts
+def post_list(request):
+    posts = Post.objects.all().order_by('-created_at')
+    return render(request, 'post_list.html', {'posts': posts})
 
+# View a single post
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    comments = post.comments.all().order_by('created_at')
+    return render(request, 'posts/post_detail.html', {'post': post, 'comments': comments})
+
+@login_required(login_url='signin')
+def add_comment(request, post_id):
+    # This view will just validate CSRF and return OK
+    if request.method == 'POST':
+        return JsonResponse({'status': 'validated'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+ 
 @login_required
 @csrf_exempt
 def delete_post(request, post_id):
@@ -508,19 +520,21 @@ def profile_view(request):
         else:
             profile.height = None
 
-        # Weight validation
+        # Weight validation (must be in kg)
+       # Weight validation (must be in kg)
         weight_str = request.POST.get('weight', '').strip()
         if weight_str:
             try:
                 weight = Decimal(weight_str)
                 if not (Decimal('30') <= weight <= Decimal('500')):
-                    errors['weight'] = "Weight must be between 30 and 500."
+                    errors['weight'].append("Weight must be between 30 and 500 kg.")
                 else:
                     profile.weight = weight
             except (ValueError, InvalidOperation):
-                errors['weight'] = "Weight must be a valid number (e.g. 55.5)."
+                errors['weight'].append("Weight must be a valid number in kg (e.g. 55.5).")
         else:
             profile.weight = None
+
 
         # Birthday validation
         birthday_str = request.POST.get('birthday', '').strip()
@@ -750,11 +764,182 @@ def services(request):
 def terms(request):
     return render(request, 'terms.html')
 
+#=========== views.py =============#
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .models import Profile, Post, FriendRequest, UserSurvey
+from django.contrib.auth.models import User
 
+# views.py
+@login_required
 def profile(request):
-    return render(request, 'profile.html')
+    user = request.user
+    profile = get_object_or_404(Profile, user=user)
+    posts = Post.objects.filter(user=user).order_by('-created_at')
+    survey = getattr(user, 'survey', None)
+    friend_requests = FriendRequest.objects.filter(to_user=user, is_accepted=False)
+    # Add friends to context
+    friends = user.profile.friends.all()[:5]  # Get first 5 friends
 
+    report_reasons = ["Spam", "Harassment", "Inappropriate Content", "Fake Profile", "Other"]
 
+    return render(request, 'profile.html', {
+        'user': user,
+        'profile': profile,
+        'posts': posts,
+        'survey': survey,
+        'friend_requests': friend_requests,
+        'report_reasons': report_reasons,
+        'is_own_profile': True,
+        'friends': friends  # Add this line
+    })
+
+@login_required
+def change_cover(request):
+    if request.method == "POST" and request.FILES.get('cover_photo'):
+        request.user.profile.cover_photo = request.FILES['cover_photo']
+        request.user.profile.save()
+    return redirect('profile')
+@login_required
+def public_profile(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    
+    if request.user == profile_user:
+        return redirect('profile')
+
+    profile = get_object_or_404(Profile, user=profile_user)
+    posts = Post.objects.filter(user=profile_user).order_by('-created_at')
+    survey = getattr(profile_user, 'survey', None)
+    
+    # Check friendship status
+    is_friend = FriendRequest.objects.filter(
+        from_user=request.user, to_user=profile_user, is_accepted=True
+    ).exists() or FriendRequest.objects.filter(
+        from_user=profile_user, to_user=request.user, is_accepted=True
+    ).exists()
+
+    # Get the first 5 friends of the profile_user
+    friends = profile_user.profile.friends.all()[:5]
+    friend_request_sent = FriendRequest.objects.filter(
+        from_user=request.user,
+        to_user=profile_user,
+        is_accepted=False
+    ).exists()
+    return render(request, 'profile.html', {
+        'user': profile_user,
+        'profile': profile,
+        'posts': posts,
+        'survey': survey,
+        'friend_requests': [],
+        'report_reasons': ["Spam", "Harassment", "Inappropriate Content", "Fake Profile", "Other"],
+        'is_own_profile': False,
+        'is_friend': is_friend,
+        'friends': friends, # Add friends to context here
+        'friend_request_sent': friend_request_sent,
+
+    })
+
+# Friend request handling
+@require_POST
+@login_required
+def decline_friend(request, request_id):
+    friend_request = get_object_or_404(FriendRequest, id=request_id, to_user=request.user)
+    friend_request.delete()
+    return redirect('profile')
+
+@login_required
+def send_friend_request(request, user_id):
+    to_user = get_object_or_404(User, id=user_id)
+    
+    if to_user == request.user:
+        return JsonResponse({'status': 'cannot_add_self'}, status=400)
+    
+    if FriendRequest.objects.filter(from_user=request.user, to_user=to_user).exists():
+        return JsonResponse({'status': 'already_sent'})
+
+    FriendRequest.objects.create(from_user=request.user, to_user=to_user)
+    return JsonResponse({'status': 'request_sent'})
+
+# views.py
+@require_POST
+@login_required
+def respond_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendRequest, id=request_id)
+    
+    if friend_request.to_user != request.user:
+        return JsonResponse({'status': 'unauthorized'}, status=403)
+
+    action = request.POST.get("action")
+    if action == "accept":
+        friend_request.is_accepted = True
+        friend_request.save()
+        
+        # Add to friends lists
+        friend_request.from_user.profile.friends.add(friend_request.to_user.profile)
+        friend_request.to_user.profile.friends.add(friend_request.from_user.profile)
+        
+        return JsonResponse({'status': 'accepted'})
+    
+    elif action == "decline":
+        friend_request.delete()
+        return JsonResponse({'status': 'declined'})
+    
+    return JsonResponse({'status': 'invalid_action'}, status=400)
+
+@login_required
+def unfriend(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+    
+    FriendRequest.objects.filter(
+        from_user=request.user, to_user=other_user, is_accepted=True
+    ).delete()
+
+    FriendRequest.objects.filter(
+        from_user=other_user, to_user=request.user, is_accepted=True
+    ).delete()
+
+    return JsonResponse({'status': 'unfriended'})
+
+# views.py
+@require_POST
+@login_required
+def toggle_follow(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    
+    if target_user == request.user:
+        return JsonResponse({"status": "error", "message": "You can't follow yourself."})
+
+    # Check if request already exists
+    existing_request = FriendRequest.objects.filter(
+        from_user=request.user,
+        to_user=target_user
+    ).first()
+
+    if existing_request:
+        # Cancel existing request
+        existing_request.delete()
+        return JsonResponse({"status": "unfollowed"})
+    else:
+        # Create new friend request
+        FriendRequest.objects.create(
+            from_user=request.user,
+            to_user=target_user
+        )
+        return JsonResponse({"status": "request_sent"})
+
+# views.py
+# views.py
+@login_required
+def friends_list(request):
+    # Get the user's friends through their profile
+    friends = request.user.profile.friends.all()
+    return render(request, 'friends_list.html', {
+        'friends': friends,
+        'is_own_profile': True  # Important for conditional rendering
+    })
+#=======end of friend request=================================#
 
 def search_users(request):
     query = request.GET.get('q', '').strip()
@@ -778,17 +963,7 @@ def search_users(request):
         'profiles': profiles,
     })
 
-
-
 User = get_user_model()
-
-def public_profile(request, username):
-    user = get_object_or_404(User, username=username)
-    profile = get_object_or_404(Profile, user=user)
-    return render(request, 'profile.html', {'profile': profile})
-
-
-
 #survey/views.py
 from django.shortcuts import render, redirect
 from .models import UserSurvey
@@ -833,7 +1008,7 @@ def survey(request):
             }
         )
 
-        return redirect('settings')  # ✅ Redirect to settings.html
+        return redirect('profile')  # ✅ Redirect to settings.html
 
     return render(request, 'survey.html')
 
@@ -880,3 +1055,97 @@ def bookmark_list(request):
 def post_detail_modal(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     return render(request, 'posts/post_detail_modal.html', {'post': post})
+
+from django.contrib.auth.decorators import login_required
+from django.db.models import Max, Q
+from .models import Message, Profile, User
+
+@login_required
+def message_list_view(request):
+    user = request.user
+
+    # Get the latest message per conversation partner
+    latest_messages = (
+        Message.objects.filter(Q(sender=user) | Q(receiver=user))
+        .order_by('receiver', '-timestamp')
+        .distinct('receiver')  # Works in PostgreSQL
+    )
+
+    # For SQLite/MySQL, manually filter latest message per partner:
+    # Optionally, group by each user, then get the latest message using a loop if necessary.
+
+    context = {
+        'messages': latest_messages,
+    }
+    return render(request, 'partials/message_list.html', context)
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q, Max
+from django.contrib.auth.models import User
+from django.shortcuts import render
+from .models import Message
+
+@login_required
+def recent_messages(request):
+    user = request.user
+
+    # Get latest message per conversation partner
+    # Step 1: Get all messages involving current user
+    all_messages = Message.objects.filter(
+        Q(sender=user) | Q(receiver=user)
+    ).order_by('-timestamp')
+
+    # Step 2: Track latest message per unique user pair
+    seen_users = set()
+    recent_conversations = []
+
+    for msg in all_messages:
+        other_user = msg.receiver if msg.sender == user else msg.sender
+        if other_user.id not in seen_users:
+            seen_users.add(other_user.id)
+            recent_conversations.append({
+                "user": other_user,
+                "message": msg,
+            })
+
+    return render(request, 'partials/message_list.html', {"conversations": recent_conversations})
+
+# Add this to your views.py
+
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+@login_required
+def posts_feed(request):
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 10))
+    posts = Post.objects.all().order_by('-created_at')[offset:offset+limit]
+    posts_html = [
+        render_to_string('posts/post_single.html', {'post': post, 'user': request.user})
+        for post in posts
+    ]
+    return JsonResponse({'posts': posts_html})
+
+
+from django.shortcuts import render
+from .models import Post
+
+def post_gallery(request):
+    posts = Post.objects.all().order_by('-created_at')
+    return render(request, 'post_gallery.html', {'posts': posts})
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
+from .models import Post, Profile
+
+def user_profile(request, username):
+    user_profile = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(user=user_profile).order_by('-created_at')
+    return render(request, 'profile.html', {
+        'user_profile': user_profile,
+        'posts': posts
+    })

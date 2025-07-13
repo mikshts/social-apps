@@ -21,16 +21,28 @@ let state = {
   naturalHeight: 0,
 };
 
-// Event Listeners
-elements.fileInput.addEventListener("change", handleFileSelect);
-elements.editBtn.addEventListener("click", showEditModal);
-elements.closeModal.addEventListener("click", hideModal);
-elements.saveCrop.addEventListener("click", saveCroppedImage);
-elements.draggableImage.addEventListener("mousedown", startDragging);
-document.addEventListener("mousemove", handleDragging);
-document.addEventListener("mouseup", stopDragging);
+// --- Profile Picture Cropping ---
+if (
+  elements.fileInput &&
+  elements.preview &&
+  elements.editBtn &&
+  elements.modal &&
+  elements.closeModal &&
+  elements.saveCrop &&
+  elements.draggableImage
+) {
+  elements.fileInput.addEventListener("change", handleFileSelect);
+  elements.editBtn.addEventListener("click", showEditModal);
+  elements.closeModal.addEventListener("click", hideModal);
+  elements.saveCrop.addEventListener("click", saveCroppedImage);
+  elements.draggableImage.addEventListener("mousedown", startDragging);
+  elements.draggableImage.addEventListener("mouseenter", () => {
+    elements.draggableImage.style.cursor = "grab";
+  });
+  document.addEventListener("mousemove", handleDragging);
+  document.addEventListener("mouseup", stopDragging);
+}
 
-// Event Handlers
 function handleFileSelect(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -47,7 +59,6 @@ function handleFileSelect(e) {
 function initCropping(imageSrc) {
   const img = new Image();
   img.src = imageSrc;
-
   img.onload = () => {
     state.naturalWidth = img.naturalWidth;
     state.naturalHeight = img.naturalHeight;
@@ -145,79 +156,10 @@ function resetImagePosition() {
   state.translateY = 0;
   elements.draggableImage.style.transform = "translate(0px, 0px)";
 }
-elements.draggableImage.addEventListener("mouseenter", () => {
-  elements.draggableImage.style.cursor = "grab";
-});
 
-//account_actions js ----------------------------
-// Initialize elements
-// Function to open a specific modal
-// Function to open a specific modal
-function toggleLike(postId) {
-  fetch(`/like/${postId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCSRFToken(), // Make sure you get the CSRF token
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // Important for session authentication
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const heartIcon = document.querySelector(`#like-btn-${postId} i`);
-      const likeCount = document.getElementById(`like-count-${postId}`);
-      const likeSection = document.getElementById(`liked-by-${postId}`);
 
-      // Toggle the 'liked' class
-      if (data.status === "liked") {
-        heartIcon.classList.add("liked");
-      } else {
-        heartIcon.classList.remove("liked");
-      }
 
-      // Update like count
-      if (likeCount) {
-        likeCount.textContent = data.likes_count;
-      }
-
-      // Update the recent likers
-      if (likeSection && data.recent_likers.length > 0) {
-        let likerHTML = data.recent_likers
-          .map(
-            (user) => `<img src="${user.profile_img}" alt="${user.username}" />`
-          )
-          .join("");
-
-        likeSection.innerHTML = `
-          <div class="like-section-content">
-            <span>Liked by</span>
-            <div class="like-section-users">
-              ${likerHTML}
-            </div>
-            <span>and</span>
-            <span id="like-count-${postId}">${data.likes_count}</span>
-            <span>others</span>
-          </div>
-        `;
-      } else {
-        // Fallback for no likes
-        likeSection.innerHTML = `
-          <div class="like-section-content">
-            <span id="like-count-${postId}">0</span> likes
-          </div>
-        `;
-      }
-    })
-    .catch((error) => console.error("Error liking post:", error));
-}
-function getCSRFToken() {
-  const cookieValue = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("csrftoken="));
-  return cookieValue ? cookieValue.split("=")[1] : "";
-}
-
-// Utility to open a modal
+// --- Modal Utilities ---
 function openMyCustomModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
@@ -225,7 +167,6 @@ function openMyCustomModal(modalId) {
   }
 }
 
-// Utility to close a modal
 function closeMyCustomModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
@@ -233,20 +174,21 @@ function closeMyCustomModal(modalId) {
   }
 }
 
-// Open Deactivate Modal and pass selected period
+// --- Deactivate Account Modal ---
 function openDeactivateAccountModal() {
-  const selectedPeriod = document.getElementById("deactivation_period").value;
+  const selectedPeriod = document.getElementById("deactivation_period")?.value;
   const displayDays = document.getElementById("deactivationDaysDisplay");
   const modalInput = document.getElementById("modalDeactivationPeriod");
 
-  // Display selected period in the confirmation modal
-  displayDays.textContent = `${selectedPeriod} days`;
-  modalInput.value = selectedPeriod;
+  if (displayDays && modalInput && selectedPeriod) {
+    displayDays.textContent = `${selectedPeriod} days`;
+    modalInput.value = selectedPeriod;
+  }
 
   openMyCustomModal("deactivateAccountModal");
 }
 
-// Close modal when clicking outside modal content
+// --- Modal Close on Outside Click ---
 window.addEventListener("click", function (event) {
   const deactivateModal = document.getElementById("deactivateAccountModal");
   const deleteModal = document.getElementById("deleteAccountModal");
@@ -259,6 +201,7 @@ window.addEventListener("click", function (event) {
   }
 });
 
+// --- Profile Image Upload Preview ---
 document.addEventListener("DOMContentLoaded", function () {
   const imageContainer = document.querySelector(".image-upload-container");
   const fileInput = document.getElementById("id_profileimg");
@@ -283,8 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.onload = function (e) {
           if (currentImg) {
             currentImg.src = e.target.result;
-          } else {
-            // If no current image, create and append it
+          } else if (noImagePlaceholder) {
             const newImg = document.createElement("img");
             newImg.src = e.target.result;
             newImg.className = "preview-img";
@@ -297,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Bio character counter
+  // --- Bio Character Counter ---
   const bioTextarea = document.getElementById("id_bio");
   const charCounter = document.getElementById("bio-count");
 
@@ -312,21 +254,27 @@ document.addEventListener("DOMContentLoaded", function () {
     bioTextarea.addEventListener("input", updateCharCount);
   }
 
-  // Form loading state
+  // --- Form Loading State ---
   const form = document.getElementById("profile-form");
   const saveBtn = document.getElementById("save-btn");
   const btnText = saveBtn?.querySelector(".btn-text");
   const loadingSpinner = saveBtn?.querySelector(".loading-spinner");
 
   if (form && saveBtn) {
-    form.addEventListener("submit", function () {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault(); // Prevent immediate submission
       saveBtn.disabled = true;
       if (btnText) btnText.style.display = "none";
       if (loadingSpinner) loadingSpinner.style.display = "inline-block";
+
+      setTimeout(() => {
+        form.submit(); // Submit the form after 1.5 seconds
+      }, 1000);
     });
   }
 });
 
+// --- Reset Form Utility ---
 function resetForm() {
   if (confirm("Are you sure you want to reset all changes?")) {
     document.getElementById("profile-form").reset();

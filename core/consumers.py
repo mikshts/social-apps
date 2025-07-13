@@ -40,6 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             data = json.loads(text_data)
             message_content = data["message"]
+            message_id = data.get("message_id")  # Accept passed message_id
 
             receiver = await self._get_user(self.receiver_id)
             current_timestamp = timezone.now()
@@ -51,9 +52,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "chat_message",
                     "message": message_content,
-                    "sender": self.user.username,
-                    "sender_id": self.user.id,
+                    "sender": self.scope["user"].username,
+                    "sender_id": self.scope["user"].id,
                     "timestamp": current_timestamp.isoformat(),
+                    "message_id": message_id,  # Echo it back
                 }
             )
         except Exception as e:
@@ -66,6 +68,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "sender": event["sender"],
             "sender_id": event["sender_id"],
             "timestamp": event["timestamp"],
+            "message_id": event.get("message_id"),  # Send it back
         }))
 
     @database_sync_to_async

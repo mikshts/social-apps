@@ -1,0 +1,68 @@
+<!-- friends_list.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends List | PerfectMatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-100 font-inter">
+    <nav class="sticky top-0 bg-white shadow-md z-50 py-2 px-4 flex justify-between items-center">
+        <a href="{% url 'profile' %}" class="flex items-center space-x-2">
+            <i data-feather="arrow-left"></i>
+            <span class="text-lg font-semibold">Back to Profile</span>
+        </a>
+        <div class="text-sm text-gray-500">
+            Hi! I'm <strong>{{ request.user.username }}</strong>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-6 px-4">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold">My Friends</h1>
+                <span class="text-gray-500">{{ friends.count }} friends</span>
+            </div>
+
+            {% if friends %}
+                <ul class="space-y-4">
+                    {% for friend in friends %}
+                    <li class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <img
+                                src="{% if friend.profileimg %}{{ friend.profileimg.url }}{% else %}{% static 'blank_profile_picture.png' %}{% endif %}"
+                                alt="{{ friend.user.username }}"
+                                class="w-14 h-14 rounded-full object-cover border-2 border-white shadow">
+                            <div>
+                                <h3 class="font-medium text-lg">{{ friend.user.username }}</h3>
+                                <p class="text-sm text-gray-500">@{{ friend.user.username|slugify }}</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'public_profile' friend.user.username %}" 
+                           class="text-blue-500 hover:text-blue-700 text-sm">
+                            View Profile
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-10">
+                    <i data-feather="users" class="w-16 h-16 mx-auto text-gray-300"></i>
+                    <h3 class="text-xl font-medium mt-4">No friends yet</h3>
+                    <p class="text-gray-500 mt-2">Start adding friends to see them here</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            feather.replace();
+        });
+    </script>
+</body>
+</html>

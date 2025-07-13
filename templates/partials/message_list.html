@@ -1,0 +1,66 @@
+{% load static %} 
+{% for convo in conversations %} 
+  {% with chat_user=convo.user msg=convo.message %}
+  <div class="message" data-user-id="{{ chat_user.id }}">
+    <div class="profile-photo">
+      <img
+        src="{{ chat_user.profile.profileimg.url }}"
+        alt="{{ chat_user.username }}" />
+    </div>
+    <div class="message-body">
+      <h5>{{ chat_user.username }}</h5>
+      <p class="text-muted">
+        {% if msg.content|length > 40 %}
+          {{ msg.content|truncatechars:40 }}
+        {% else %}
+          {{ msg.content }} 
+        {% endif %}
+      </p>
+    </div>
+  </div>
+  {% endwith %} 
+  {% empty %}
+<p class="text-muted">No messages yet.</p>
+{% endfor %}
+<style>
+  .chat-popup {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    z-index: 1000;
+    width: 320px;
+  }
+</style>
+<script>
+  //chat-------------
+  document.addEventListener("DOMContentLoaded", function () {
+    const messageList = document.getElementById("message-list-container");
+    if (messageList) {
+      messageList.addEventListener("click", function (e) {
+        // Find the closest .message ancestor of the click target
+        const messageEl = e.target.closest(".message");
+        if (messageEl) {
+          const receiverId = messageEl.dataset.userId;
+          // Your existing logic to open chat, etc.
+          fetch(`/chat/${receiverId}/`)
+            .then((res) => res.text())
+            .then((html) => {
+              // ...handle chat popup...
+            });
+        }
+      });
+    }
+  });
+  function openChat(userId) {
+    if (!userId || isNaN(Number(userId))) {
+      alert("Invalid user ID for chat.");
+      return;
+    }
+    // Open chat.html for the selected user (replace with your actual chat URL)
+    window.location.href = `/chat/${userId}/`;
+  }
+</script>

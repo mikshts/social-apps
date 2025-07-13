@@ -4,14 +4,17 @@
 <div class="feed" id="post-{{ post.id }}">
   <div class="head">
     <div class="user" style="display: flex; align-items: center; gap: 10px">
-      <div class="profile-photo">
+      <a
+        class="profile-photo"
+        href="{% url 'public_profile' post.user.username %}
+">
         <img
-          src="{{ post.user.profile.profileimg.url|default:'/static/blank_profile_picture.png' }}" />
-      </div>
+          src="{{ post.user.profile.profileimg.url|default:'/static/blank_profile_picture.png' }}"
+          alt="{{ post.user.username }}'s profile picture" />
+      </a>
       <div class="info">
         <h3 style="display: flex; align-items: center; gap: 6px">
-          {{ post.user.username }} 
-          {% if post.user.profile.is_online%}
+          {{ post.user.username }} {% if post.user.profile.is_online%}
           <span class="online-dot"></span>
           {% else%}
           <span class="offline-dot"></span>
@@ -29,26 +32,23 @@
     </div>
 
     {% if user != post.user %}
-      <span class="chat">
-        <button
-          type="button"
-          title="Chat"
-          style="all: unset; cursor: pointer"
-          onclick="openChat({{ post.user.id }})">
-          <span class="material-symbols-outlined">chat</span>
-        </button>
-      </span>
-    {% endif %}
-
-
-    {% if user == post.user %}
+    <span class="chat">
+      <button
+        type="button"
+        title="Chat"
+        class="chat-btn"
+        onclick="openChat('{{ post.user.id }}')">
+        <span class="material-symbols-outlined">chat</span>
+      </button>
+    </span>
+    {% endif %} {% if user == post.user %}
     <span class="edit">
-
       <button
         type="button"
         title="Delete"
         style="all: unset; cursor: pointer"
-        onclick="deletePost('{{ post.id }}')"><!-- gamiton and post.id kuwa sang psot sa bookmarks -->
+        onclick="deletePost('{{ post.id }}')">
+        <!-- gamiton and post.id kuwa sang psot sa bookmarks -->
         <span class="material-symbols-outlined">...</span>
       </button>
     </span>
@@ -56,7 +56,7 @@
   </div>
 
   {% if post.image %}
-  <div class="photo">
+  <div onclick="openCommentPopup('{{ post.id }}')" class="photo">
     <img src="{{ post.image.url }}" alt="Post Image" />
   </div>
   {% endif %}
@@ -225,26 +225,26 @@
 <script>
   function toggleBookmark(postId, elem) {
     fetch("{% url 'toggle_bookmark' %}", {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'X-CSRFToken': '{{ csrf_token }}',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: `post_id=${postId}`,
     })
-    .then(response => response.json())
-    .then(data => {
-      const icon = elem.querySelector("i");
-      icon.classList.add("animate");
+      .then((response) => response.json())
+      .then((data) => {
+        const icon = elem.querySelector("i");
+        icon.classList.add("animate");
 
-      if (data.status === "added") {
-        icon.classList.add("bookmarked");
-      } else {
-        icon.classList.remove("bookmarked");
-      }
+        if (data.status === "added") {
+          icon.classList.add("bookmarked");
+        } else {
+          icon.classList.remove("bookmarked");
+        }
 
-      // Remove animation after short delay
-      setTimeout(() => icon.classList.remove("animate"), 200);
-    });
+        // Remove animation after short delay
+        setTimeout(() => icon.classList.remove("animate"), 200);
+      });
   }
 </script>

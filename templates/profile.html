@@ -1,1030 +1,774 @@
-<!-- File: social_book/templates/profile.html -->
+<!-- profile.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile Page</title>
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}" />
+    <title>{{ user.username }}'s Profile | PerfectMatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_diamond" />
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet" />
+    <script src="https://unpkg.com/feather-icons"></script>
     <style>
-      /* Global Styles */
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-      body {
-        font-family: "Inter", sans-serif;
-        margin: 0;
-        padding: 0;
-        overflow: hidden; /* Prevent body scroll, main container handles its own overflow */
-        color: #333;
-        background-color: #f3f4f6;
-        line-height: 1.6;
-      }
-
-      a {
-        text-decoration: none;
-        color: inherit;
-      }
-
-      button {
-        border: none;
-        background: none;
-        cursor: pointer;
-        padding: 0;
-        font-family: inherit;
-      }
-
-      /* Utility Classes (simulating some common Tailwind behaviors with plain CSS) */
-      .container {
-        width: 80%;
-        margin: 0 auto;
-        padding: 0 1rem; /* Consistent padding */
-      }
-
-      .shadow-md {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      }
-      .shadow-lg {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      }
-      .shadow-xl {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-          0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      }
-
-      .rounded-full {
-        border-radius: 9999px;
-      }
-      .rounded-3xl {
-        border-radius: 1.5rem;
-      } /* 24px */
-      .rounded-xl {
-        border-radius: 0.75rem;
-      } /* 12px */
-
-      .flex {
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
         display: flex;
-      }
-      .items-center {
         align-items: center;
-      }
-      .justify-center {
         justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
       }
-      .justify-between {
-        justify-content: space-between;
+      .modal-overlay.open {
+        opacity: 1;
+        visibility: visible;
       }
-      .flex-col {
-        flex-direction: column;
+      .modal-content {
+        background: white;
+        border-radius: 0.5rem;
+        position: relative;
       }
-
-      .text-center {
-        text-align: center;
-      }
-      .font-bold {
-        font-weight: 700;
-      }
-      .font-semibold {
-        font-weight: 600;
-      }
-      .font-medium {
-        font-weight: 500;
-      }
-      .text-sm {
-        font-size: 0.875rem;
-      } /* 14px */
-      .text-lg {
-        font-size: 1.125rem;
-      } /* 18px */
-      .text-xl {
-        font-size: 1.25rem;
-      } /* 20px */
-      .text-2xl {
+      .modal-close-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 1rem;
         font-size: 1.5rem;
-      } /* 24px */
-      .text-3xl {
-        font-size: 1.875rem;
-      } /* 30px */
-
-      .text-blue-500 {
-        color: #3b82f6;
-      }
-      .text-white {
-        color: #fff;
-      }
-      .text-gray-100 {
-        color: #f3f4f6;
-      }
-      .text-gray-200 {
-        color: #e5e7eb;
-      }
-      .text-gray-300 {
-        color: #d1d5db;
-      }
-      .text-gray-400 {
-        color: #9ca3af;
-      }
-      .text-gray-500 {
-        color: #6b7280;
-      }
-      .text-gray-600 {
-        color: #4b5563;
-      }
-      .text-gray-700 {
-        color: #374151;
-      }
-      .text-red-500 {
-        color: #ef4444;
-      }
-      .text-yellow-400 {
-        color: #facc15;
-      }
-
-      .bg-white {
-        background-color: #fff;
-      }
-      .bg-gray-50 {
-        background-color: #f9fafb;
-      }
-      .bg-gray-100 {
-        background-color: #f3f4f6;
-      }
-      .bg-gray-200 {
-        background-color: #e5e7eb;
-      }
-      .bg-blue-500 {
-        background-color: #3b82f6;
-      }
-
-      .hover-blue-600:hover {
-        background-color: #2563eb;
-      }
-      .hover-text-blue-500:hover {
-        color: #3b82f6;
-      }
-      .hover-bg-gray-100:hover {
-        background-color: #f3f4f6;
-      }
-
-      .p-2 {
-        padding: 0.5rem;
-      }
-      .p-3 {
-        padding: 0.75rem;
-      }
-      .p-4 {
-        padding: 1rem;
-      }
-      .p-6 {
-        padding: 1.5rem;
-      }
-      .px-3 {
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-      }
-      .py-1 {
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
-      }
-      .py-2 {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-      }
-      .py-3 {
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-      }
-      .py-4 {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-      }
-      .py-8 {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-      }
-      .pb-6 {
-        padding-bottom: 1.5rem;
-      }
-      .pt-20 {
-        padding-top: 5rem;
-      }
-      .pt-24 {
-        padding-top: 6rem;
-      }
-      .pt-32 {
-        padding-top: 8rem;
-      }
-
-      .space-x-1 > *:not(:first-child) {
-        margin-left: 0.25rem;
-      }
-      .space-x-2 > *:not(:first-child) {
-        margin-left: 0.5rem;
-      }
-      .space-x-3 > *:not(:first-child) {
-        margin-left: 0.75rem;
-      }
-      .space-x-4 > *:not(:first-child) {
-        margin-left: 1rem;
-      }
-      .space-y-2 > *:not(:first-child) {
-        margin-top: 0.5rem;
-      }
-      .space-y-4 > *:not(:first-child) {
-        margin-top: 1rem;
-      }
-      .space-y-6 > *:not(:first-child) {
-        margin-top: 1.5rem;
-      }
-      .space-y-8 > *:not(:first-child) {
-        margin-top: 2rem;
-      }
-
-      .mb-2 {
-        margin-bottom: 0.5rem;
-      }
-      .mb-4 {
-        margin-bottom: 1rem;
-      }
-      .mb-6 {
-        margin-bottom: 1.5rem;
-      }
-      .mb-8 {
-        margin-bottom: 2rem;
-      }
-      .mt-6 {
-        margin-top: 1.5rem;
-      }
-      .mt-8 {
-        margin-top: 2rem;
-      }
-      .mr-2 {
-        margin-right: 0.5rem;
-      }
-      .mr-4 {
-        margin-right: 1rem;
-      }
-      .ml-auto {
-        margin-left: auto;
-      }
-      .ml-4 {
-        margin-left: 1rem;
-      }
-
-      .w-5 {
-        width: 1.25rem;
-      } /* 20px */
-      .w-10 {
-        width: 2.5rem;
-      } /* 40px */
-      .w-12 {
-        width: 3rem;
-      } /* 48px */
-      .w-24 {
-        width: 6rem;
-      } /* 96px */
-      .w-28 {
-        width: 7rem;
-      } /* 112px */
-      .w-32 {
-        width: 8rem;
-      } /* 128px */
-      .w-40 {
-        width: 10rem;
-      } /* 160px */
-      .w-full {
-        width: 100%;
-      }
-      .h-5 {
-        height: 1.25rem;
-      }
-      .h-10 {
-        height: 2.5rem;
-      }
-      .h-12 {
-        height: 3rem;
-      }
-      .h-24 {
-        height: 6rem;
-      }
-      .h-28 {
-        height: 7rem;
-      }
-      .h-32 {
-        height: 8rem;
-      }
-      .h-40 {
-        height: 10rem;
-      }
-      .h-48 {
-        height: 12rem;
-      }
-      .h-auto {
-        height: auto;
-      }
-      .min-h-screen {
-        min-height: 100vh;
-      }
-      .max-h-96 {
-        max-height: 24rem;
-      } /* 384px */
-
-      .object-cover {
-        object-fit: cover;
-      }
-      .relative {
-        position: relative;
-      }
-      .absolute {
-        position: absolute;
-      }
-      .left-6 {
-        left: 1.5rem;
-      } /* 24px */
-      .bottom {
-        bottom: -4rem;
-      } /* -64px */
-      .translate-y-1\/2 {
-        transform: translateY(50%);
-      }
-
-      .transition-colors {
-        transition-property: color, background-color, border-color,
-          text-decoration-color, fill, stroke;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 150ms;
-      }
-      .transition-transform {
-        transition-property: transform;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 150ms;
-      }
-      .duration-200 {
-        transition-duration: 200ms;
-      }
-      .duration-300 {
-        transition-duration: 300ms;
-      }
-      .hover-scale-110:hover {
-        transform: scale(1.1);
-      }
-      .hover-scale-1005:hover {
-        transform: scale(1.005);
-      }
-
-      /* Specific Layout Styles */
-      header {
-        background-color: #fff;
-        padding: 1rem 0;
-        border-bottom: 1px solid #eee; /* Subtle separator */
-      }
-      header .container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      main {
-        height: calc(100vh - 64px); /* Full height minus header */
-        overflow: hidden; /* Prevent main scrollbar */
-      }
-
-      main .container {
-        height: 100%; /* Ensure grid container fills main's height */
-        display: grid;
-        grid-template-columns: 18vw auto 20vw;
-        column-gap: 2rem;
-        padding-top: 2rem; /* py-8 equivalent */
-        padding-bottom: 2rem; /* py-8 equivalent */
-        box-sizing: border-box; /* Include padding in height calculation */
-      }
-
-      aside,
-      section {
-        height: 100%; /* Fill parent grid cell height */
-        overflow-y: auto; /* Enable vertical scrolling for content inside */
-        padding-right: 1rem; /* For custom scrollbar visual separation */
-        box-sizing: border-box; /* Include padding in height calculation */
-      }
-
-      /* Custom Scrollbar */
-      .custom-scrollbar::-webkit-scrollbar {
-        display: none; /* Hide scrollbar for WebKit browsers */
-      }
-
-      /* Middle section specific */
-      .middle-section {
-        background-color: #fff;
-        border-radius: 1.5rem;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-          0 10px 10px -5px rgba(0, 0, 0, 0.04); /* shadow-xl */
-        padding-right: 0; /* No right padding on middle section to avoid double scrollbar look */
-      }
-      .cover-photo-container {
-        width: 100%;
-        height: 12rem; /* h-48 */
-        position: relative;
-        overflow: hidden;
-        border-top-left-radius: 1.5rem;
-        border-top-right-radius: 1.5rem;
-      }
-      .cover-photo-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .profile-pic-container {
-        position: absolute;
-        left: 1.5rem; /* left-6 */
-        bottom: -4rem; /* bottom-[-4rem] */
-        transform: translateY(50%);
-      }
-      .profile-pic-container img {
-        width: 6rem; /* w-24 */
-        height: 6rem; /* h-24 */
-        border-radius: 9999px; /* rounded-full */
-        border: 4px solid #fff; /* border-4 border-white */
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
-        object-fit: cover;
-      }
-
-      .feed-content {
-        padding-top: 5rem; /* pt-20 */
-        padding-left: 1.5rem; /* px-6 */
-        padding-right: 1.5rem; /* px-6 */
-        padding-bottom: 1.5rem; /* pb-6 */
-      }
-      .feed-post {
-        background-color: #fff;
-        padding: 1.5rem;
-        border-radius: 1.5rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
-        transition: transform 300ms ease-in-out;
-      }
-      .feed-post:hover {
-        transform: scale(1.005);
-      }
-      .feed-post .post-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
-      .feed-post .post-header img {
-        width: 3rem; /* w-12 */
-        height: 3rem; /* h-12 */
-        border-radius: 9999px;
-        margin-right: 1rem;
-        object-fit: cover;
-      }
-      .feed-post .post-header .author-info p:first-child {
-        font-weight: 600; /* font-semibold */
-        font-size: 1.125rem; /* text-lg */
-      }
-      .feed-post .post-header .author-info p:last-child {
-        font-size: 0.875rem; /* text-sm */
-        color: #6b7280; /* text-gray-500 */
-      }
-      .feed-post .post-header .more-icon {
-        margin-left: auto;
-        color: #6b7280; /* text-gray-500 */
         cursor: pointer;
-        transition: color 150ms ease-in-out;
       }
-      .feed-post .post-header .more-icon:hover {
-        color: #3b82f6; /* hover-text-blue-500 */
-      }
-      .feed-post .post-content-text {
-        margin-bottom: 1rem;
-        line-height: 1.6;
-        color: #374151; /* text-gray-700 */
-      }
-      .feed-post .post-image {
-        width: 100%;
-        height: auto;
-        border-radius: 0.75rem;
-        margin-bottom: 1rem;
-        object-fit: cover;
-        max-height: 24rem; /* max-h-96 */
-      }
-      .feed-post .post-footer {
+      .profile-icon-button {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        font-size: 0.875rem; /* text-sm */
-        color: #4b5563; /* text-gray-600 */
+        justify-content: center;
+        cursor: pointer;
       }
-      .feed-post .post-footer .interactions {
+      /* Interaction buttons */
+      .interaction-button {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 1rem; /* space-x-4 */
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        justify-content: center;
+        transition: all 0.3s ease;
+        color: white;
+        position: relative;
       }
-      .feed-post .post-footer button {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem; /* space-x-1 */
-        color: inherit;
-        transition: color 150ms ease-in-out;
-      }
-      .feed-post .post-footer button:hover {
-        color: #3b82f6; /* hover-text-blue-500 */
-      }
-      .feed-post .post-footer button i {
-        transition: transform 150ms ease-in-out;
-      }
-      .feed-post .post-footer button:hover i {
+
+      .interaction-button:hover {
+        background: rgba(255, 255, 255, 0.3);
         transform: scale(1.1);
       }
-      .feed-post .post-footer .like-icon {
-        color: #ef4444;
-      } /* text-red-500 */
-      .feed-post .post-footer .more-options-button {
-        padding: 0.5rem;
-        border-radius: 9999px;
-        transition: background-color 150ms ease-in-out;
-      }
-      .feed-post .post-footer .more-options-button:hover {
-        background-color: #f3f4f6; /* hover-bg-gray-100 */
-      }
-      .load-more-btn {
-        padding: 0.75rem 1.5rem; /* px-6 py-3 */
-        border-radius: 9999px; /* rounded-full */
-        background-color: #3b82f6; /* bg-blue-500 */
-        color: #fff; /* text-white */
-        font-weight: 600; /* font-semibold */
-        transition: background-color 200ms ease-in-out;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
-      }
-      .load-more-btn:hover {
-        background-color: #2563eb; /* hover-blue-600 */
+
+      .interaction-button i {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2;
       }
 
-      /* Responsive adjustments */
-      @media (max-width: 1024px) {
-        /* Medium screens and smaller */
-        main .container {
-          grid-template-columns: 1fr; /* Single column layout */
-          column-gap: 0;
-        }
-        .left-sidebar,
-        .right-sidebar {
-          display: none; /* Hide sidebars on smaller screens */
-        }
-        .middle-section {
-          padding-right: 1rem; /* Add back padding for middle section for mobile */
-        }
-        .feed-content {
-          padding-top: 6rem; /* pt-24 */
-        }
-        .profile-pic-container {
-          bottom: -5rem; /* md:bottom-[-5rem] */
-        }
-        .profile-pic-container img {
-          width: 8rem; /* md:w-32 */
-          height: 8rem; /* md:h-32 */
-        }
-        .cover-photo-container {
-          height: 16rem; /* md:h-64 */
-        }
+      .interaction-count {
+        position: absolute;
+        bottom: -20px;
+        font-size: 12px;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
       }
 
-      @media (max-width: 768px) {
-        /* Small screens (mobile) */
-        .container {
-          width: 95%; /* Wider on small screens */
-        }
-        .feed-content {
-          padding-top: 5rem; /* pt-20 */
-        }
-        .profile-pic-container {
-          bottom: -4rem; /* back to initial bottom value for smaller phones */
-        }
-        .profile-pic-container img {
-          width: 6rem; /* w-24 */
-          height: 6rem; /* h-24 */
-        }
-        .cover-photo-container {
-          height: 12rem; /* h-48 */
-        }
+      /* Comment styling */
+      .comment-item {
+        padding: 8px 12px;
+        background: #f9f9f9;
+        border-radius: 18px;
+        margin-bottom: 8px;
+      }
+
+      .comment-item .username {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .comment-item .text {
+        font-size: 14px;
+        color: #555;
+      }
+
+      .comment-item .time {
+        font-size: 11px;
+        color: #999;
+        margin-top: 4px;
       }
     </style>
   </head>
-  <body>
-    {% include 'navbar.html' %}
+  <body class="bg-gray-100 font-inter">
+    <!-- Sticky Header -->
+    <nav
+      class="sticky top-0 bg-white shadow-md z-50 py-2 px-4 flex justify-between items-center">
+      <a href="{% url 'index' %}" class="flex items-center space-x-2">
+        <i data-feather="arrow-left"></i>
+        <span class="text-lg font-semibold">Home</span>
+      </a>
+      <div class="text-sm text-gray-500">
+        Hi! I'm <strong>{{ user.username }}</strong>
+      </div>
+    </nav>
 
-    <main>
-      <div class="container py-8 px-4 h-full">
-        <!-- Left Section - Personal Info & Analytics -->
-        <aside id="left-sidebar" class="left-sidebar custom-scrollbar">
-          <div
-            id="user-info-card"
-            class="p-6 rounded-3xl shadow-xl bg-white mb-6">
-            <!-- User Info will be populated here by JS -->
-          </div>
-          <div id="analytics-card" class="p-6 rounded-3xl shadow-xl bg-white">
-            <!-- Analytics will be populated here by JS -->
-          </div>
-          <div
-            id="quick-links-card"
-            class="p-6 rounded-3xl shadow-xl bg-white mt-6">
-            <h3 class="text-xl font-bold mb-4">Quick Links</h3>
-            <ul class="space-y-2 text-gray-700">
-              <li><a href="#" class="hover-text-blue-500">My Friends</a></li>
-              <li><a href="#" class="hover-text-blue-500">Groups</a></li>
-              <li><a href="#" class="hover-text-blue-500">Events</a></li>
-            </ul>
-          </div>
-        </aside>
+    <!-- Header Section -->
+    <header class="relative">
+      <!-- Cover Photo -->
+      <img
+        src="{% if user.profile.cover_photo %}{{ user.profile.cover_photo.url }}{% else %}{% static 'default_cover.jpg' %}{% endif %}"
+        alt="Cover"
+        class="w-full h-64 object-cover" />
 
-        <!-- Middle Section - Cover, Profile, Feed -->
-        <section id="middle-section" class="middle-section custom-scrollbar">
-          
-          <div id="cover-photo-container" class="cover-photo-container">
-            <!-- Cover photo will be populated here by JS -->
-            <div id="profile-pic-container" class="profile-pic-container">
-              <!-- Profile pic will be populated here by JS -->
-            </div>
-          </div>
-          <div id="feed-content" class="feed-content">
-            
-            <h2 class="text-3xl font-bold mb-8 ml-4 text-blue-500">
-              Recent Activity
-            </h2>
-            <div id="posts-container" class="space-y-8">
-              <!-- Feed posts will be populated here by JS -->
-            </div>
-            <div class="text-center mt-8">
-              <button class="load-more-btn">Load More Posts</button>
-            </div>
-          </div>
+      <!-- Change Cover Button -->
+      {% if is_own_profile %}
+      <div class="absolute bottom-4 right-4">
+        <button
+          id="changeCoverBtn"
+          class="bg-black hover:bg-gray-800 text-white px-3 py-1 rounded-md">
+          Change Cover
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Profile Image -->
+      <div class="absolute bottom-0 left-4 transform translate-y-1/2">
+        <div
+          class="w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
+          <img
+            src="{% if user.profile.profileimg %}{{ user.profile.profileimg.url }}{% else %}{% static 'blank_profile_picture.png' %}{% endif %}"
+            alt="Profile Photo"
+            class="w-full h-full object-cover" />
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div class="absolute bottom-4 left-40 text-white drop-shadow-lg">
+        <h1 class="text-2xl font-bold">{{ user.username }}</h1>
+        <p class="text-sm text-gray-200">@{{ user.username|slugify }}</p>
+      </div>
+
+      <!-- Top-Right Icons -->
+      <div class="absolute top-4 right-4 flex gap-3">
+        {% if is_own_profile %}
+        <a
+          href="{% url 'friends_list' %}"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md">
+          Friends List
+        </a>
+        {% else %} {% if is_friend %}
+        <button
+          onclick="toggleFollow({{ user.id }})"
+          class="px-3 py-1 rounded-md text-white bg-gray-600 hover:bg-gray-700">
+          Unfollow
+        </button>
+        {% elif friend_request_sent %}
+        <button
+          class="px-3 py-1 rounded-md text-white bg-yellow-500 hover:bg-yellow-600">
+          Request Sent
+        </button>
+        {% else %}
+        <button
+          onclick="toggleFollow({{ user.id }})"
+          class="px-3 py-1 rounded-md text-white bg-green-500 hover:bg-green-600">
+          Follow
+        </button>
+        {% endif %} {% endif %}
+        <button title="Message" class="profile-icon-button">
+          <i data-feather="message-circle"></i>
+        </button>
+        <button title="Report" id="reportBtn" class="profile-icon-button">
+          <i data-feather="alert-triangle" class="text-red-500"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main
+      class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 mt-20 px-4">
+      <!-- Left Sidebar -->
+      <aside class="lg:col-span-3 space-y-6">
+        <!-- About Me -->
+        <section class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-2">About Me</h2>
+          <p class="text-sm text-gray-600">
+            {{ user.profile.bio|default:"No bio added yet." }}
+          </p>
         </section>
 
-        <!-- Right Section - Blank Scrollable -->
-        <aside id="right-sidebar" class="right-sidebar custom-scrollbar">
-          <div
-            id="suggested-people-card"
-            class="p-6 rounded-3xl shadow-xl bg-white mb-6">
-            <h3 class="text-xl font-bold mb-4">Suggested People</h3>
-            <div id="suggested-people-list" class="space-y-4">
-              <!-- Suggested people will be populated here by JS -->
+        <!-- Hobbies -->
+        <section class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-2">Hobbies</h2>
+          {% if user.survey.hobbies %}
+          <div class="flex flex-wrap gap-2">
+            {% for hobby in user.survey.hobbies %}
+            <span
+              class="bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm flex items-center">
+              {{ hobby }}
+            </span>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-sm italic text-gray-400">No hobbies listed.</p>
+          {% endif %}
+        </section>
+
+        <!-- Analytics -->
+        <section class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-2">Analytics</h2>
+          <div class="text-xs text-gray-600 space-y-1">
+            <p><strong>Views:</strong> 1,234</p>
+            <p><strong>Likes:</strong> 567</p>
+            <p><strong>Comments:</strong> 123</p>
+            <p><strong>Shares:</strong> 45</p>
+            <p><strong>Followers:</strong> 890</p>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Main Content -->
+      <section class="lg:col-span-6">
+        <div class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-4">Posts</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {% for post in posts %}
+            <div
+              class="feed-item relative {% if not is_friend and not is_own_profile %}blur-md pointer-events-none{% endif %}"
+              data-post-id="{{ post.id }}">
+              <img
+                src="{{ post.image.url }}"
+                alt="{{ post.caption }}"
+                class="rounded-md object-cover w-full h-36" />
+              <p class="text-xs text-center text-gray-600 mt-1">
+                {{ post.caption|truncatechars:30 }}
+              </p>
+              {% if not is_friend and not is_own_profile %}
+              <div
+                class="absolute inset-0 flex items-center justify-center text-white bg-black/60 rounded-md">
+                <p class="text-sm font-semibold">Add as friend to view posts</p>
+              </div>
+              {% else %}
+              <div class="flex justify-around text-xs text-gray-600 mt-2">
+                <div class="flex items-center space-x-1">
+                  <i data-feather="heart" class="w-4 h-4"></i>
+                  <span>{{ post.likes.count }}</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <i data-feather="message-circle" class="w-4 h-4"></i>
+                  <span>{{ post.comments.count }}</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <i data-feather="bookmark" class="w-4 h-4"></i>
+                  <span>{{ post.bookmark_set.count }}</span>
+                </div>
+              </div>
+              {% endif %}
             </div>
+            {% endfor %}
           </div>
-          <div id="trends-card" class="p-6 rounded-3xl shadow-xl bg-white">
-            <h3 class="text-xl font-bold mb-4">Trends for you</h3>
-            <ul id="trends-list" class="space-y-2 text-gray-600">
-              <!-- Trends will be populated here by JS -->
-            </ul>
+        </div>
+      </section>
+
+      <!-- Right Sidebar -->
+      <div class="lg:col-span-3 space-y-6">
+        {% if friend_requests %}
+        <section class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-3">Friend Requests</h2>
+          <div class="space-y-3">
+            {% for request in friend_requests %}
+            <div
+              id="friend-request-{{ request.id }}"
+              class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <img
+                  src="{{ request.from_user.profile.profileimg.url|default:'https://placehold.co/40x40?text=U' }}"
+                  class="w-10 h-10 rounded-full object-cover" />
+                <div>
+                  <p class="font-medium text-gray-800">
+                    {{ request.from_user.username }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex space-x-2">
+                <button
+                  onclick="respondRequest({{ request.id }}, 'accept')"
+                  class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">
+                  Accept
+                </button>
+                <button
+                  onclick="respondRequest({{ request.id }}, 'decline')"
+                  class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-3 py-1 rounded-md">
+                  Decline
+                </button>
+              </div>
+            </div>
+            {% endfor %}
           </div>
-          <div class="h-48"></div>
-          <!-- Placeholder to ensure scrollability -->
-        </aside>
+        </section>
+        {% endif %}
+
+        <!-- Friends List -->
+        <!-- friends_list.html -->
+        {% if is_own_profile %}
+        <section class="bg-white rounded-xl shadow p-4">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-semibold">My Friends</h2>
+            <a
+              href="{% url 'friends_list' %}"
+              class="text-blue-500 text-sm hover:underline"
+              >See All</a
+            >
+          </div>
+
+          {% if friends %}
+          <ul class="space-y-3">
+            {% for friend in friends|slice:":5" %}
+            <li class="flex items-center space-x-3">
+              <img
+                src="{% if friend.profileimg %}{{ friend.profileimg.url }}{% else %}{% static 'blank_profile_picture.png' %}{% endif %}"
+                alt="Friend Photo"
+                class="w-10 h-10 rounded-full object-cover border" />
+              <div>
+                <!-- Access username through friend.user -->
+                <h3 class="font-medium">{{ friend.user.username }}</h3>
+                <p class="text-xs text-gray-500">
+                  @{{ friend.user.username|slugify }}
+                </p>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-sm text-gray-500 italic">No friends yet.</p>
+          {% endif %}
+        </section>
+        {% endif %}
       </div>
     </main>
 
+    <!-- Modals -->
+    <div id="reportModal" class="modal-overlay hidden">
+      <div class="modal-content max-w-lg w-full relative p-6">
+        <button class="modal-close-button" id="closeReportModal">
+          &times;
+        </button>
+        <h2 class="text-2xl font-bold text-red-600 text-center mb-2">
+          Report This Profile
+        </h2>
+        <form id="reportForm" class="space-y-4">
+          <div class="space-y-2">
+            {% for reason in report_reasons %}
+            <label class="flex items-center gap-2">
+              <input
+                type="radio"
+                name="reason"
+                value="{{ reason }}"
+                required
+                class="accent-red-500" />
+              <span>{{ reason }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          <textarea
+            name="additionalComments"
+            rows="3"
+            placeholder="Tell us more..."
+            class="w-full border rounded-lg p-2 text-sm"></textarea>
+          <button
+            type="submit"
+            class="w-full bg-red-500 hover:bg-red-600 text-white rounded-full py-2">
+            Submit Report
+          </button>
+        </form>
+        <div
+          id="reportSuccessMsg"
+          class="hidden text-green-600 text-sm text-center mt-2">
+          ✅ Thank you! Your report was submitted.
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Cover Modal -->
+    <div id="coverModal" class="modal-overlay hidden">
+      <div class="modal-content max-w-md w-full relative p-6">
+        <button class="modal-close-button" id="closeCoverModal">&times;</button>
+        <h2 class="text-xl font-semibold mb-2 text-center">
+          Change Cover Photo
+        </h2>
+        <form
+          id="coverForm"
+          method="POST"
+          enctype="multipart/form-data"
+          action="{% url 'change_cover' %}">
+          {% csrf_token %}
+          <input
+            type="file"
+            name="cover_photo"
+            accept="image/*"
+            required
+            class="block w-full text-sm mb-4" />
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+            Upload
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- Post Detail Modal -->
+    <div id="postModal" class="modal-overlay hidden">
+      <div class="modal-content max-w-6xl w-full h-5/6 relative">
+        <button class="modal-close-button" id="closePostModal">&times;</button>
+
+        <div class="flex h-full bg-white rounded-lg">
+          <!-- Image section (3/4 width) -->
+          <div class="w-3/4 relative bg-black flex items-center justify-center">
+            <img
+              id="modalPostImage"
+              src=""
+              class="max-h-full max-w-full object-contain" />
+
+            <!-- Vertical interaction buttons -->
+            <div
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-6">
+              <button class="interaction-button" data-action="like">
+                <i data-feather="heart"></i>
+                <span id="likeCount" class="interaction-count">0</span>
+              </button>
+              <button class="interaction-button" data-action="comment">
+                <i data-feather="message-circle"></i>
+                <span id="commentCount" class="interaction-count">0</span>
+              </button>
+              <button class="interaction-button" data-action="bookmark">
+                <i data-feather="bookmark"></i>
+                <span id="bookmarkCount" class="interaction-count">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Details section (1/4 width) -->
+          <div class="w-1/4 flex flex-col">
+            <!-- User header -->
+            <div class="flex items-center space-x-3 p-4 border-b">
+              <img
+                id="modalPostUserImg"
+                src=""
+                class="w-10 h-10 rounded-full object-cover border-2 border-white" />
+              <span id="modalPostUsername" class="font-semibold"></span>
+            </div>
+
+            <!-- Caption and comments -->
+            <div class="flex-1 overflow-y-auto p-4">
+              <!-- Caption -->
+              <div class="mb-4">
+                <p>
+                  <span class="font-semibold" id="modalPostUsername2"></span>
+                  <span id="modalPostCaption"></span>
+                </p>
+                <p class="text-xs text-gray-500 mt-1" id="modalPostDate"></p>
+              </div>
+
+              <!-- Comments section -->
+              <div class="space-y-3 mt-4">
+                <h3 class="font-semibold text-gray-700">Comments</h3>
+                <div id="modalPostComments" class="space-y-3">
+                  <!-- Comments will be dynamically added here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Interaction counts and time -->
+            <div class="p-4 border-t flex justify-between items-center">
+              <div>
+                <p class="text-sm">
+                  <span class="font-semibold" id="modalPostLikes"></span> likes
+                </p>
+                <p
+                  class="text-xs text-gray-500"
+                  id="modalPostCommentsCount"></p>
+              </div>
+              <button class="text-blue-500 hover:text-blue-700 text-sm">
+                Share
+              </button>
+            </div>
+
+            <!-- Add comment form -->
+            <div class="p-4 border-t">
+              <form class="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <button
+                  type="submit"
+                  class="text-blue-500 font-semibold hover:text-blue-700 transition-colors">
+                  Post
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // Dummy Data (remains the same)
-      const userInfo = {
-        name: "johnmalco",
-        gender: "Male",
-        age: 25,
-        location: "Cebu City, Philip",
-        bio: "Passionate full-stack developer and a lover of technology. Always exploring new ideas and places.",
-        profilePic: "https://placehold.co/150x150/ff7f50/ffffff?text=John",
-        coverPhoto:
-          "https://placehold.co/1200x400/6495ed/ffffff?text=Cover+Photo",
-      };
-
-      const analyticsData = [
-        { label: "Posts", value: "1,200", icon: "message-square" },
-        { label: "Followers", value: "10K", icon: "user" },
-        { label: "Likes", value: "50K", icon: "heart" },
-        { label: "Shares", value: "5K", icon: "share-2" },
-      ];
-
-      const feedPosts = [
-        {
-          id: 1,
-          author: "johnmalco",
-          authorPic: userInfo.profilePic,
-          time: "2 hours ago",
-          content:
-            "Enjoying the beautiful sunset here in Cebu! 🌅 #sunset #travel #Philippines",
-          image: "https://placehold.co/600x400/9b59b6/ffffff?text=Cebu+Sunset",
-          likes: 120,
-          comments: 15,
-          shares: 5,
-        },
-        {
-          id: 2,
-          author: "johnmalco",
-          authorPic: userInfo.profilePic,
-          time: "1 day ago",
-          content:
-            "Just finished a new design project. So excited to share it soon! ✨",
-          image:
-            "https://placehold.co/600x400/e74c3c/ffffff?text=Design+Project",
-          likes: 85,
-          comments: 10,
-          shares: 2,
-        },
-        {
-          id: 3,
-          author: "johnmalco",
-          authorPic: userInfo.profilePic,
-          time: "3 days ago",
-          content:
-            "Exploring new hiking trails. Nature always recharges my soul. 🌲",
-          image: "https://placehold.co/600x400/f39c12/ffffff?text=Hiking+Trail",
-          likes: 200,
-          comments: 30,
-          shares: 10,
-        },
-      ];
-
-      const suggestedPeople = [
-        {
-          name: "Hajia Bintu",
-          username: "hajiabintu",
-          pic: "https://placehold.co/40x40/c0ffee/333333?text=HB",
-        },
-        {
-          name: "Jane Doe",
-          username: "janedoe",
-          pic: "https://placehold.co/40x40/f0f8ff/333333?text=JD",
-        },
-        {
-          name: "Peter Jones",
-          username: "peterj",
-          pic: "https://placehold.co/40x40/add8e6/333333?text=PJ",
-        },
-        {
-          name: "Sarah Lee",
-          username: "sarahlee",
-          pic: "https://placehold.co/40x40/dda0dd/333333?text=SL",
-        },
-        {
-          name: "Mike Ross",
-          username: "mikeross",
-          pic: "https://placehold.co/40x40/a9a9a9/333333?text=MR",
-        },
-      ];
-
-      const trends = [
-        { name: "#CebuAdventures", posts: "1.2M" },
-        { name: "#PhilippinesTravel", posts: "980K" },
-        { name: "#TechLife", posts: "750K" },
-        { name: "#NewDesigns2025", posts: "600K" },
-        { name: "#CodingCommunity", posts: "500K" },
-      ];
-
-      // Function to render user information
-      function renderUserInfo() {
-        const userInfoCard = document.getElementById("user-info-card");
-        if (userInfoCard) {
-          userInfoCard.innerHTML = `
-                    <div class="flex justify-center mb-4">
-                        <img
-                            src="${userInfo.profilePic}"
-                            alt="User Profile"
-                            class="w-28 h-28 rounded-full border-4 text-blue-500 shadow-lg object-cover"
-                            onerror="this.onerror=null; this.src='https://placehold.co/150x150/cccccc/333333?text=Profile';"
-                            style="border-color: #3b82f6;"
-                        />
-                    </div>
-                    <h2 class="text-center text-2xl font-bold mb-2">${
-                      userInfo.name
-                    }</h2>
-                    <p class="text-center text-sm mb-4">@${userInfo.name
-                      .toLowerCase()
-                      .replace(/\s/g, "")}</p>
-                    <div class="text-center text-sm p-3 rounded-xl bg-gray-100 mb-4">
-                        <p>Gender: <span class="font-semibold">${
-                          userInfo.gender
-                        }</span></p>
-                        <p>Age: <span class="font-semibold">${
-                          userInfo.age
-                        }</span></p>
-                        <p>Location: <span class="font-semibold">${
-                          userInfo.location
-                        }</span></p>
-                    </div>
-                    <p class="text-sm leading-relaxed text-center italic text-gray-700">${
-                      userInfo.bio
-                    }</p>
-                `;
-          lucide.createIcons();
-        } else {
-          console.error("User info card element not found.");
-        }
-      }
-
-      // Function to render analytics
-      function renderAnalytics() {
-        const analyticsCard = document.getElementById("analytics-card");
-        if (analyticsCard) {
-          analyticsCard.innerHTML = `
-                    <h3 class="text-xl font-bold mb-4 flex items-center">
-                        <i data-lucide="activity" class="w-5 h-5 mr-2 text-blue-500"></i>
-                        User Activity
-                    </h3>
-                    <div class="grid-cols-2-gap-4">
-                        ${analyticsData
-                          .map(
-                            (item) => `
-                            <div class="p-4 rounded-xl bg-gray-50 flex flex-col items-center justify-center text-center shadow-sm" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                <div class="text-blue-500 mb-2"><i data-lucide="${item.icon}" class="w-5 h-5"></i></div>
-                                <p class="text-2xl font-bold">${item.value}</p>
-                                <p class="text-xs text-gray-500">${item.label}</p>
-                            </div>
-                        `
-                          )
-                          .join("")}
-                    </div>
-                `;
-          // Manually apply grid styles since it's not a utility class
-          const gridContainer =
-            analyticsCard.querySelector(".grid-cols-2-gap-4");
-          if (gridContainer) {
-            gridContainer.style.display = "grid";
-            gridContainer.style.gridTemplateColumns =
-              "repeat(2, minmax(0, 1fr))";
-            gridContainer.style.gap = "1rem"; /* 16px */
-          }
-          lucide.createIcons();
-        } else {
-          console.error("Analytics card element not found.");
-        }
-      }
-
-      // Function to render cover and profile photos
-      function renderCoverAndProfilePhotos() {
-        const coverPhotoContainer = document.getElementById(
-          "cover-photo-container"
-        );
-        const profilePicContainer = document.getElementById(
-          "profile-pic-container"
-        );
-
-        if (coverPhotoContainer) {
-          coverPhotoContainer.innerHTML = `
-                    <img
-                        src="${userInfo.coverPhoto}"
-                        alt="Cover Photo"
-                        class="w-full h-full object-cover rounded-t-3xl"
-                        onerror="this.onerror=null; this.src='https://placehold.co/1200x400/94a3b8/ffffff?text=Cover+Photo';"
-                    />
-                `;
-        } else {
-          console.error("Cover photo container element not found.");
-        }
-
-        if (profilePicContainer) {
-          profilePicContainer.innerHTML = `
-                    <img
-                        src="${userInfo.profilePic}"
-                        alt="Profile"
-                        class="w-24 h-24 rounded-full shadow-xl object-cover"
-                        onerror="this.onerror=null; this.src='https://placehold.co/150x150/cccccc/333333?text=Profile';"
-                        style="border: 4px solid #fff;"
-                    />
-                `;
-        } else {
-          console.error("Profile pic container element not found.");
-        }
-        lucide.createIcons();
-      }
-
-      // Function to render feed posts
-      function renderFeedPosts() {
-        const postsContainer = document.getElementById("posts-container");
-        if (postsContainer) {
-          postsContainer.innerHTML = feedPosts
-            .map(
-              (post) => `
-                    <div class="feed-post">
-                        <div class="post-header">
-                            <img src="${post.authorPic}" alt="${post.author}" />
-                            <div class="author-info">
-                                <p class="font-semibold text-lg">${
-                                  post.author
-                                }</p>
-                                <p class="text-sm text-gray-500">${
-                                  post.time
-                                }</p>
-                            </div>
-                            <i data-lucide="more-horizontal" class="w-5 h-5 more-icon"></i>
-                        </div>
-                        <p class="post-content-text">${post.content}</p>
-                        ${
-                          post.image
-                            ? `<img src="${post.image}" alt="Post Image" class="post-image" onerror="this.onerror=null; this.src='https://placehold.co/600x400/94a3b8/ffffff?text=Image+Unavailable';" />`
-                            : ""
-                        }
-                        <div class="post-footer">
-                            <div class="interactions">
-                                <button class="flex items-center space-x-1 hover-text-blue-500">
-                                    <i data-lucide="heart" class="w-4 h-4 like-icon"></i>
-                                    <span>${post.likes}</span>
-                                </button>
-                                <button class="flex items-center space-x-1 hover-text-blue-500">
-                                    <i data-lucide="message-square" class="w-4 h-4"></i>
-                                    <span>${post.comments}</span>
-                                </button>
-                                <button class="flex items-center space-x-1 hover-text-blue-500">
-                                    <i data-lucide="share-2" class="w-4 h-4"></i>
-                                    <span>${post.shares}</span>
-                                </button>
-                            </div>
-                            <button class="more-options-button">
-                                <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                    </div>
-                `
-            )
-            .join("");
-          lucide.createIcons();
-        } else {
-          console.error("Posts container element not found.");
-        }
-      }
-
-      // Function to render suggested people
-      function renderSuggestedPeople() {
-        const suggestedPeopleList = document.getElementById(
-          "suggested-people-list"
-        );
-        if (suggestedPeopleList) {
-          suggestedPeopleList.innerHTML = suggestedPeople
-            .map(
-              (person) => `
-                    <div class="flex items-center space-x-3">
-                        <img src="${person.pic}" alt="${
-                person.name
-              }" class="w-10 h-10 rounded-full object-cover" />
-                        <div>
-                            <p class="font-medium">${person.name}</p>
-                            <p class="text-sm text-gray-500">${
-                              person.username === "hajiabintu"
-                                ? "8 mutual friends"
-                                : "@" + person.username
-                            }</p>
-                        </div>
-                        <button class="ml-auto px-3 py-1 bg-blue-500 text-white text-sm rounded-full hover-blue-600">
-                            ${
-                              person.username === "hajiabintu"
-                                ? "Accept"
-                                : "Follow"
-                            }
-                        </button>
-                    </div>
-                `
-            )
-            .join("");
-          lucide.createIcons();
-        } else {
-          console.error("Suggested people list element not found.");
-        }
-      }
-
-      // Function to render trends
-      function renderTrends() {
-        const trendsList = document.getElementById("trends-list");
-        if (trendsList) {
-          trendsList.innerHTML = trends
-            .map(
-              (trend) => `
-                    <li>${trend.name} <span class="text-sm text-gray-400">(${trend.posts} posts)</span></li>
-                `
-            )
-            .join("");
-          lucide.createIcons();
-        } else {
-          console.error("Trends list element not found.");
-        }
-      }
-
-      // DOM Content Loaded - Initial rendering
       document.addEventListener("DOMContentLoaded", () => {
-        renderUserInfo();
-        renderAnalytics();
-        renderCoverAndProfilePhotos();
-        renderFeedPosts();
-        renderSuggestedPeople();
-        renderTrends();
+        feather.replace();
 
-        // This ensures all Lucide icons are correctly rendered after DOM content is loaded
-        lucide.createIcons();
+        // Modal handling
+        const modals = {
+          report: {
+            element: document.getElementById("reportModal"),
+            openBtn: document.getElementById("reportBtn"),
+            closeBtn: document.getElementById("closeReportModal"),
+          },
+          cover: {
+            element: document.getElementById("coverModal"),
+            openBtn: document.getElementById("changeCoverBtn"),
+            closeBtn: document.getElementById("closeCoverModal"),
+          },
+          post: {
+            element: document.getElementById("postModal"),
+            closeBtn: document.getElementById("closePostModal"),
+          },
+        };
+
+        // Setup modal open/close
+        Object.values(modals).forEach((modal) => {
+          if (modal.closeBtn && modal.element) {
+            modal.closeBtn.addEventListener("click", () => {
+              modal.element.classList.replace("open", "hidden");
+            });
+          }
+          if (modal.openBtn) {
+            modal.openBtn.addEventListener("click", () => {
+              modal.element.classList.replace("hidden", "open");
+            });
+          }
+        });
+
+        // Report form submission
+        const reportForm = document.getElementById("reportForm");
+        if (reportForm) {
+          reportForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            document
+              .getElementById("reportSuccessMsg")
+              .classList.remove("hidden");
+            setTimeout(
+              () => modals.report.element.classList.replace("open", "hidden"),
+              2000
+            );
+          });
+        }
+
+        // Sample comment data
+        const sampleComments = [
+          {
+            id: 1,
+            username: "jane_doe",
+            text: "This is amazing! 😍",
+            time: "2h",
+          },
+          {
+            id: 2,
+            username: "travel_buddy",
+            text: "Where was this taken? Looks beautiful!",
+            time: "5h",
+          },
+          {
+            id: 3,
+            username: "photo_lover",
+            text: "Great composition and colors!",
+            time: "1d",
+          },
+        ];
+
+        // Function to open post modal
+        function openPostModal(postId, postData) {
+          // Set post data in modal
+          document.getElementById("modalPostImage").src = postData.imageUrl;
+          document.getElementById("modalPostUserImg").src = postData.userImg;
+          document.getElementById("modalPostUsername").textContent =
+            postData.username;
+          document.getElementById("modalPostUsername2").textContent =
+            postData.username;
+          document.getElementById("modalPostCaption").textContent =
+            postData.caption;
+          document.getElementById("modalPostLikes").textContent =
+            postData.likes;
+          document.getElementById(
+            "modalPostCommentsCount"
+          ).textContent = `${postData.comments} comments`;
+          document.getElementById("likeCount").textContent = postData.likes;
+          document.getElementById("commentCount").textContent =
+            postData.comments;
+          document.getElementById("bookmarkCount").textContent =
+            postData.bookmarks;
+          document.getElementById("modalPostDate").textContent = postData.date;
+
+          // Populate comments
+          const commentsContainer =
+            document.getElementById("modalPostComments");
+          commentsContainer.innerHTML = "";
+
+          sampleComments.forEach((comment) => {
+            const commentEl = document.createElement("div");
+            commentEl.className = "comment-item";
+            commentEl.innerHTML = `
+          <div class="flex items-start">
+            <div class="flex-1">
+              <span class="username">${comment.username}</span>
+              <p class="text">${comment.text}</p>
+              <p class="time">${comment.time}</p>
+            </div>
+            <button class="text-gray-400 hover:text-red-500">
+              <i data-feather="heart" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+            commentsContainer.appendChild(commentEl);
+          });
+
+          // Open modal
+          modals.post.element.classList.replace("hidden", "open");
+
+          // Refresh Feather icons
+          setTimeout(() => feather.replace(), 100);
+        }
+
+        // Add event listeners to post items
+        document.querySelectorAll(".feed-item").forEach((item) => {
+          item.addEventListener("click", function () {
+            if (this.classList.contains("pointer-events-none")) return;
+
+            const postId = this.dataset.postId;
+
+            // Get the post elements
+            const img = this.querySelector("img");
+            const caption = this.querySelector("p");
+            const counts = this.querySelectorAll(
+              ".flex.items-center.space-x-1 span"
+            );
+
+            // Format the created_at date
+            const date = new Date();
+            const formattedDate = date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+
+            // Get post data from the item
+            const postData = {
+              imageUrl: img.src,
+              userImg:
+                "{% if user.profile.profileimg %}{{ user.profile.profileimg.url }}{% else %}{% static 'blank_profile_picture.png' %}{% endif %}",
+              username: "{{ user.username }}",
+              caption: caption.textContent.trim(),
+              likes: counts[0].textContent,
+              comments: counts[1].textContent,
+              bookmarks: counts[2].textContent,
+              date: `Posted on ${formattedDate}`,
+            };
+
+            openPostModal(postId, postData);
+          });
+        });
+
+        // Add interaction button functionality
+        document.addEventListener("click", function (e) {
+          const button = e.target.closest(".interaction-button");
+          if (!button) return;
+
+          e.stopPropagation();
+          const action = button.dataset.action;
+          const countEl = button.querySelector(".interaction-count");
+          let count = parseInt(countEl.textContent) || 0;
+
+          switch (action) {
+            case "like":
+              countEl.textContent = count + 1;
+              button.classList.add("text-red-500");
+              break;
+            case "comment":
+              // Focus comment input
+              document.querySelector("#postModal input[type='text']").focus();
+              break;
+            case "bookmark":
+              countEl.textContent = count + 1;
+              button.classList.add("text-yellow-500");
+              break;
+          }
+        });
+
+        // Friend request handling
+        function respondRequest(requestId, action) {
+          fetch(`/friend-request/respond/${requestId}/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `action=${action}`,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "accepted" || data.status === "declined") {
+                document.getElementById(`friend-request-${requestId}`).remove();
+              }
+            });
+        }
+
+        // Follow/unfollow
+        function toggleFollow(userId) {
+          fetch(`/toggle-follow/${userId}/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.status === "request_sent") {
+                location.reload(); // Refresh to show "Request Sent"
+              } else if (data.status === "unfollowed") {
+                location.reload(); // Refresh to show "Follow"
+              }
+            });
+        }
+
+        // CSRF helper
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+              cookie = cookie.trim();
+              if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(
+                  cookie.substring(name.length + 1)
+                );
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
       });
     </script>
   </body>

@@ -1,0 +1,20 @@
+{% for request in friend_requests %}
+  <div id="friend-request-{{ request.id }}" class="flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <img src="{{ request.from_user.profile.profileimg.url|default:'https://placehold.co/40x40?text=U' }}"
+           class="w-10 h-10 rounded-full object-cover" />
+      <div>
+        <p class="font-medium text-gray-800">{{ request.from_user.username }}</p>
+        <p class="text-gray-500 text-xs">{{ request.mutual_friends_count|default:'0' }} mutual friends</p>
+      </div>
+    </div>
+    <div class="flex space-x-2">
+      <button onclick="respondRequest({{ request.id }}, 'accept')"
+              class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">Accept</button>
+      <button onclick="respondRequest({{ request.id }}, 'decline')"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-3 py-1 rounded-md">Decline</button>
+    </div>
+  </div>  
+{% empty %}
+  <p class="text-sm text-gray-500 italic">No pending requests.</p>
+{% endfor %}
