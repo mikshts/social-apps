@@ -3,24 +3,19 @@ from . import views
 from .views import profile_view, chat_view
 
 urlpatterns = [
-    #messages
+    # Messages
     path('', views.index, name='index'),
     path('settings/', profile_view, name='profile_view'),
     path('chat/<int:receiver_id>/', chat_view, name='chat'),
     path('recent-messages/', views.recent_messages, name='recent_messages'),
 
-
-
-    # Friend requests
+    # Friend requests (simplified)
     path('friend-request/send/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
-    path('friend-request/respond/<int:request_id>/', views.respond_friend_request, name='respond_friend_request'),
-    path('friend-request/decline/<int:request_id>/', views.decline_friend, name='decline_friend'),
+    path('friend-request/respond/<int:request_id>/', views.respond_friend_request, name='respond_friend_request'),  
+    path('friend-request/cancel/<int:user_id>/', views.cancel_friend_request, name='cancel_friend_request'),
     path('friend-request/unfriend/<int:user_id>/', views.unfriend, name='unfriend'),
     path('friends/', views.friends_list, name='friends_list'),
     path('toggle-follow/<int:user_id>/', views.toggle_follow, name='toggle_follow'),
-
-
-
 
     # Auth
     path('signin/', views.signin, name='signin'),
@@ -45,10 +40,9 @@ urlpatterns = [
 
     # Navigation and search
     path('search-users/', views.search_users, name='search-users'),
-
+    
     # Post-related
     path('profile/change-cover/', views.change_cover, name='change_cover'),
-    path('posts/', views.post_gallery, name='post_gallery'),
     path('post_list/', views.post_list, name='post_list'),
     path('post/<uuid:post_id>/', views.post_detail, name='post_detail'),
     path('post/create/', views.create_post, name='create_post'),
@@ -58,16 +52,14 @@ urlpatterns = [
     path('like/<uuid:post_id>/', views.like_post, name='like-post'),
     path('post_detail_modal/<uuid:post_id>/', views.post_detail_modal, name='post_detail_modal'),
 
-    # Public profile and logged-in profile (NEW CLEAN VERSION)
+    # Public profile
     path('profile/', views.profile, name='profile'),
     path('profile/<str:username>/', views.public_profile, name='public_profile'),
 
-    # Survey additional pages
+    # Survey pages
     path('survey/services/', views.survey_services, name='survey_services'),
     path('survey/terms/', views.survey_terms, name='survey_terms'),
     path('survey/contact/', views.survey_contact, name='survey_contact'),
     path('survey/whydata/', views.survey_whydata, name='survey_whydata'),   
     path('survey/', views.survey, name='survey'),
-
-
 ]

@@ -437,166 +437,121 @@ def like_post(request, post_id):
 
 # views.py
 # views.py
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.db.models import Count, Q  # Add Count and Q
+from .models import Profile, Post, FriendRequest, UserSurvey, Comment, Bookmark  # Add missing models
+from django.contrib.auth.models import User
 
 
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from decimal import Decimal, InvalidOperation
+from .models import Profile
+from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_http_methods
+from datetime import date
 
-
-@login_required
-def profile_view(request):
-    user = request.user
-
+# Helper functions moved ABOVE the view
+def validate_age(value):
+    if not value:
+        return None, []
     try:
-        profile = user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=user)
+        age = int(value)
+        if not (13 <= age <= 120):
+            return None, ["Age must be between 13 and 120."]
+        return age, []
+    except ValueError:
+        return None, ["Age must be a valid number."]
 
-    # Initialize errors dict with empty lists for each field
-    errors = {
-        'location': [],
-        'relation': [],
-        'gender': [],
-        'bio': [],
-        'age': [],
-        'height': [],
-        'weight': [],
-        'birthday': [],
-        'profile_img': [],
-    }
+def validate_height(value):
+    if not value:
+        return None, []
+    try:
+        height = Decimal(value)
+        if not (1 <= height <= 10):
+            return None, ["Height must be between 1 and 10 feet."]
+        return height, []
+    except (ValueError, InvalidOperation):
+        return None, ["Height must be a valid decimal number."]
 
-    if request.method == 'POST':
-        # Location validation
-        location = request.POST.get('location', '').strip()
-        if len(location) > 100:
-            errors['location'].append("Location must be 100 characters or less.")
-        else:
-            profile.location = location
+def validate_weight(value):
+    if not value:
+        return None, []
+    try:
+        weight = Decimal(value)
+        if not (30 <= weight <= 500):
+            return None, ["Weight must be between 30 and 500 kg."]
+        return weight, []
+    except (ValueError, InvalidOperation):
+        return None, ["Weight must be a valid number in kg."]
 
-        # Relationship validation
-        relation = request.POST.get('relation', '').strip()
-        if relation and relation not in dict(Profile.RELATIONSHIP_CHOICES):
-            errors['relation'].append("Invalid relationship status selected.")
-        else:
-            profile.relation = relation
+def validate_birthday(value):
+    if not value:
+        return None, []
+    try:
+        birthday = parse_date(value)
+        today = date.today()
+        
+        if not birthday:
+            return None, ["Invalid birthday format. Use YYYY-MM-DD."]
+        if birthday > today:
+            return None, ["Birthday cannot be in the future."]
+        
+        age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
+        if age < 13:
+            return None, ["You must be at least 13 years old."]
+        if age > 120:
+            return None, ["Please enter a valid birthday."]
+            
+        return birthday, []
+    except Exception:
+        return None, ["Invalid birthday format."]
 
-        # Gender validation
-        gender = request.POST.get('gender', '').strip()
-        if gender and gender not in dict(Profile.GENDER_CHOICES):
-            errors['gender'].append("Invalid gender selected.")
-        else:
-            profile.gender = gender
+def validate_location(value):
+    value = value.strip()
+    if len(value) > 100:
+        return None, ["Location must be 100 characters or less."]
+    return value, []
 
-        # Bio validation
-        bio = request.POST.get('bio', '').strip()
-        if len(bio) > 1000:
-            errors['bio'].append("Bio must be 1000 characters or less.")
-        else:
-            profile.bio = bio
+def validate_relation(value):
+    if value and value not in dict(Profile.RELATIONSHIP_CHOICES):
+        return None, ["Invalid relationship status selected."]
+    return value, []
 
-        # Age validation
-        age_str = request.POST.get('age', '').strip()
-        if age_str:
-            try:
-                age = int(age_str)
-                if age < 13 or age > 120:
-                    errors['age'].append("Age must be between 13 and 120.")
-                else:
-                    profile.age = age
-            except ValueError:
-                errors['age'].append("Age must be a valid number.")
-        else:
-            profile.age = None
+def validate_gender(value):
+    if value and value not in dict(Profile.GENDER_CHOICES):
+        return None, ["Invalid gender selected."]
+    return value, []
 
-        # Height validation
-        height_str = request.POST.get('height', '').strip()
-        if height_str:
-            try:
-                height = Decimal(height_str)
-                if height < 1 or height > 10:
-                    errors['height'].append("Height must be between 1 and 10 feet.")
-                else:
-                    profile.height = height
-            except (ValueError, InvalidOperation):
-                errors['height'].append("Height must be a valid decimal number.")
-        else:
-            profile.height = None
+def validate_bio(value):
+    value = value.strip()
+    if len(value) > 1000:
+        return None, ["Bio must be 1000 characters or less."]
+    return value, []
 
-        # Weight validation (must be in kg)
-       # Weight validation (must be in kg)
-        weight_str = request.POST.get('weight', '').strip()
-        if weight_str:
-            try:
-                weight = Decimal(weight_str)
-                if not (Decimal('30') <= weight <= Decimal('500')):
-                    errors['weight'].append("Weight must be between 30 and 500 kg.")
-                else:
-                    profile.weight = weight
-            except (ValueError, InvalidOperation):
-                errors['weight'].append("Weight must be a valid number in kg (e.g. 55.5).")
-        else:
-            profile.weight = None
+def process_profile_image(request, profile, errors):
+    if 'profile_img' not in request.FILES:
+        return
+    
+    img = request.FILES['profile_img']
+    if img.size > 5 * 1024 * 1024:
+        errors['profile_img'].append("Profile image must be less than 5MB.")
+    
+    allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    if img.content_type not in allowed_types:
+        errors['profile_img'].append("Profile image must be JPEG, PNG, or GIF format.")
+    
+    if not errors['profile_img']:
+        profile.profileimg = img
 
-
-        # Birthday validation
-        birthday_str = request.POST.get('birthday', '').strip()
-        if birthday_str:
-            try:
-                birthday = parse_date(birthday_str)
-                from datetime import date
-                today = date.today()
-                if birthday is None:
-                    errors['birthday'].append("Invalid birthday format. Use MM-DD-YYYY.")
-                else:
-                    age_from_birthday = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
-                    if birthday > today:
-                        errors['birthday'].append("Birthday cannot be in the future.")
-                    elif age_from_birthday < 13:
-                        errors['birthday'].append("You must be at least 13 years old.")
-                    elif age_from_birthday > 120:
-                        errors['birthday'].append("Please enter a valid birthday.")
-                    else:
-                        profile.birthday = birthday
-            except Exception:
-                errors['birthday'].append("Invalid birthday format.")
-        else:
-            profile.birthday = None
-
-        # Profile image upload
-        if 'profile_img' in request.FILES:
-            profile_img = request.FILES['profile_img']
-            if profile_img.size > 5 * 1024 * 1024:
-                errors['profile_img'].append("Profile image must be less than 5MB.")
-            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-            if profile_img.content_type not in allowed_types:
-                errors['profile_img'].append("Profile image must be JPEG, PNG, or GIF format.")
-            if not any(errors.values()):  # No errors in any field
-                profile.profileimg = profile_img
-
-        # Check if there are any errors collected
-        has_errors = any(errors[field] for field in errors)
-
-        if not has_errors:
-            try:
-                profile.full_clean()
-                profile.save()
-                messages.success(request, "Profile updated successfully!")
-                return redirect('profile')
-            except ValidationError as e:
-                # Assign model validation errors to fields
-                for field, field_errors in e.message_dict.items():
-                    if field in errors:
-                        errors[field].extend(field_errors)
-                messages.error(request, "Please correct the errors below.")
-            except Exception:
-                messages.error(request, "An unexpected error occurred. Please try again.")
-
-        else:
-            # Add all errors to messages so they display at top
-            for field_errors in errors.values():
-                for err in field_errors:
-                    messages.error(request, err)
-
-    # For GET or after POST failure, prepare current_values for form
-    current_values = {
+def get_current_values(profile):
+    return {
         'location': profile.location or '',
         'relation': profile.relation or '',
         'gender': profile.gender or '',
@@ -608,105 +563,66 @@ def profile_view(request):
         'profile_img_url': profile.profileimg.url if profile.profileimg else '',
     }
 
+@login_required
+@require_http_methods(["GET", "POST"])
+def profile_view(request):
+    user = request.user
+    profile, created = Profile.objects.get_or_create(user=user)
+    errors = {field: [] for field in [
+        'location', 'relation', 'gender', 'bio', 
+        'age', 'height', 'weight', 'birthday', 'profile_img'
+    ]}
+    
+    if request.method == 'POST':
+        # Process all fields
+        field_validators = {
+            'location': validate_location,
+            'relation': validate_relation,
+            'gender': validate_gender,
+            'bio': validate_bio,
+            'age': validate_age,
+            'height': validate_height,
+            'weight': validate_weight,
+            'birthday': validate_birthday,
+        }
+        
+        for field, validator in field_validators.items():
+            value = request.POST.get(field, '').strip()
+            processed, field_errors = validator(value)
+            if field_errors:
+                errors[field].extend(field_errors)
+            else:
+                setattr(profile, field, processed)
+        
+        # Handle profile image
+        process_profile_image(request, profile, errors)
+        
+        # Validate and save if no errors
+        if not any(errors.values()):
+            try:
+                profile.full_clean()
+                profile.save()
+                messages.success(request, "Profile updated successfully!")
+                return redirect('profile')
+            except ValidationError as e:
+                for field, errs in e.message_dict.items():
+                    if field in errors:
+                        errors[field].extend(errs)
+                messages.error(request, "Please correct the errors below.")
+        
+        # Show all errors to user
+        for field_errs in errors.values():
+            for err in field_errs:
+                messages.error(request, err)
+
     context = {
-        'current_values': current_values,
-        'errors': {k: v[0] if v else None for k, v in errors.items()},  # Show first error per field in template
+        'current_values': get_current_values(profile),
+        'errors': {k: v[0] if v else '' for k, v in errors.items()},
         'relationship_choices': Profile.RELATIONSHIP_CHOICES,
         'gender_choices': Profile.GENDER_CHOICES,
     }
-
     return render(request, 'settings.html', context)
 
-
-
-class ProfileForm(forms.ModelForm):
-    """
-    Form for handling profile updates with built-in validation
-    """
-    class Meta:
-        model = Profile
-        fields = [
-            'bio', 'profileimg', 'location', 'age', 'relation', 
-            'gender', 'height', 'weight', 'birthday'
-        ]
-        widgets = {
-            'bio': forms.Textarea(attrs={'rows': 4, 'maxlength': 1000}),
-            'location': forms.TextInput(attrs={'maxlength': 100}),
-            'age': forms.NumberInput(attrs={'min': 13, 'max': 120}),
-            'height': forms.NumberInput(attrs={'step': '0.1', 'min': '1', 'max': '10'}),
-            'weight': forms.NumberInput(attrs={'step': '0.1', 'min': '30', 'max': '500'}),
-            'birthday': forms.DateInput(attrs={'type': 'date'}),
-            'relation': forms.Select(),
-            'gender': forms.Select(),
-        }
-    
-    def clean_age(self):
-        age = self.cleaned_data.get('age')
-        if age is not None and (age < 13 or age > 120):
-            raise forms.ValidationError("Age must be between 13 and 120.")
-        return age
-    
-    def clean_birthday(self):
-        birthday = self.cleaned_data.get('birthday')
-        if birthday:
-            from datetime import date
-            today = date.today()
-            if birthday > today:
-                raise forms.ValidationError("Birthday cannot be in the future.")
-            
-            age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
-            if age < 13:
-                raise forms.ValidationError("You must be at least 13 years old.")
-            elif age > 120:
-                raise forms.ValidationError("Please enter a valid birthday.")
-        return birthday
-    
-    def clean_profileimg(self):
-        image = self.cleaned_data.get('profileimg')
-        if image:
-            # Validate file size (5MB limit)
-            if image.size > 5 * 1024 * 1024:
-                raise forms.ValidationError("Image file too large (max 5MB).")
-            
-            # Validate file type
-            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-            if image.content_type not in allowed_types:
-                raise forms.ValidationError("Please upload a valid image file (JPEG, PNG, or GIF).")
-        
-        return image
-
-
-@login_required 
-def profile_view_with_forms(request):
-    """
-    Alternative implementation using Django Forms (Recommended)
-    """
-    user = request.user
-    
-    # Get or create profile
-    try:
-        profile = user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=user)
-    
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect('profile')
-        else:
-            # Form errors will be displayed in the template
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = ProfileForm(instance=profile)
-    
-    context = {
-        'form': form,
-        'user_profile': profile,
-    }
-    
-    return render(request, 'settings.html', context)
 
 # core/views.py
 
@@ -764,7 +680,7 @@ def services(request):
 def terms(request):
     return render(request, 'terms.html')
 
-#=========== views.py =============#
+#===========  profile .html        views.py =============#
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -784,7 +700,10 @@ def profile(request):
     friends = user.profile.friends.all()[:5]  # Get first 5 friends
 
     report_reasons = ["Spam", "Harassment", "Inappropriate Content", "Fake Profile", "Other"]
-
+    total_likes = Post.objects.filter(user=user).aggregate(total=Count('likes'))['total'] or 0
+    total_comments = Comment.objects.filter(post__user=user).count()
+    total_bookmarks = Bookmark.objects.filter(post__user=user).count()
+    total_visits = profile.profile_visits
     return render(request, 'profile.html', {
         'user': user,
         'profile': profile,
@@ -793,8 +712,13 @@ def profile(request):
         'friend_requests': friend_requests,
         'report_reasons': report_reasons,
         'is_own_profile': True,
-        'friends': friends  # Add this line
+        'friends': friends,
+        'total_likes': total_likes,
+        'total_comments': total_comments,
+        'total_bookmarks': total_bookmarks,
+        'total_visits': total_visits,
     })
+
 
 @login_required
 def change_cover(request):
@@ -812,6 +736,9 @@ def public_profile(request, username):
     profile = get_object_or_404(Profile, user=profile_user)
     posts = Post.objects.filter(user=profile_user).order_by('-created_at')
     survey = getattr(profile_user, 'survey', None)
+    profile.profile_visits += 1
+    profile.save()
+    
     
     # Check friendship status
     is_friend = FriendRequest.objects.filter(
@@ -827,6 +754,12 @@ def public_profile(request, username):
         to_user=profile_user,
         is_accepted=False
     ).exists()
+
+    total_likes = Post.objects.filter(user=profile_user).aggregate(total=Count('likes'))['total'] or 0
+    total_comments = Comment.objects.filter(post__user=profile_user).count()
+    total_bookmarks = Bookmark.objects.filter(post__user=profile_user).count()
+    total_visits = profile.profile_visits
+
     return render(request, 'profile.html', {
         'user': profile_user,
         'profile': profile,
@@ -836,10 +769,14 @@ def public_profile(request, username):
         'report_reasons': ["Spam", "Harassment", "Inappropriate Content", "Fake Profile", "Other"],
         'is_own_profile': False,
         'is_friend': is_friend,
-        'friends': friends, # Add friends to context here
+        'friends': friends,
         'friend_request_sent': friend_request_sent,
-
+        'total_likes': total_likes,
+        'total_comments': total_comments,
+        'total_bookmarks': total_bookmarks,
+        'total_visits': total_visits,
     })
+
 
 # Friend request handling
 @require_POST
@@ -849,18 +786,6 @@ def decline_friend(request, request_id):
     friend_request.delete()
     return redirect('profile')
 
-@login_required
-def send_friend_request(request, user_id):
-    to_user = get_object_or_404(User, id=user_id)
-    
-    if to_user == request.user:
-        return JsonResponse({'status': 'cannot_add_self'}, status=400)
-    
-    if FriendRequest.objects.filter(from_user=request.user, to_user=to_user).exists():
-        return JsonResponse({'status': 'already_sent'})
-
-    FriendRequest.objects.create(from_user=request.user, to_user=to_user)
-    return JsonResponse({'status': 'request_sent'})
 
 # views.py
 @require_POST
@@ -888,18 +813,52 @@ def respond_friend_request(request, request_id):
     
     return JsonResponse({'status': 'invalid_action'}, status=400)
 
+@require_POST
+@login_required
+def send_friend_request(request, user_id):
+    to_user = get_object_or_404(User, id=user_id)
+    
+    if to_user == request.user:
+        return JsonResponse({'status': 'error', 'message': "Can't add yourself"})
+    
+    # Check for existing request
+    existing_request = FriendRequest.objects.filter(
+        from_user=request.user,
+        to_user=to_user
+    ).first()
+
+    if existing_request:
+        return JsonResponse({'status': 'already_sent'})
+    
+    FriendRequest.objects.create(from_user=request.user, to_user=to_user)
+    return JsonResponse({'status': 'request_sent'})
+
+@require_POST
+@login_required
+def cancel_friend_request(request, user_id):
+    to_user = get_object_or_404(User, id=user_id)
+    FriendRequest.objects.filter(
+        from_user=request.user,
+        to_user=to_user,
+        is_accepted=False
+    ).delete()
+    return JsonResponse({'status': 'request_canceled'})
+
+@require_POST
 @login_required
 def unfriend(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
     
+    # Remove friendship connections
+    request.user.profile.friends.remove(other_user.profile)
+    other_user.profile.friends.remove(request.user.profile)
+    
+    # Delete friend requests
     FriendRequest.objects.filter(
-        from_user=request.user, to_user=other_user, is_accepted=True
+        Q(from_user=request.user, to_user=other_user) |
+        Q(from_user=other_user, to_user=request.user)
     ).delete()
-
-    FriendRequest.objects.filter(
-        from_user=other_user, to_user=request.user, is_accepted=True
-    ).delete()
-
+    
     return JsonResponse({'status': 'unfriended'})
 
 # views.py

@@ -39,6 +39,7 @@ class Profile(models.Model):
     is_online = models.BooleanField(default=False)
     cover_photo = models.ImageField(upload_to='cover_photos/', default='blank_profile_picture.png', blank=True)
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
+    profile_visits = models.PositiveIntegerField(default=0)
 
 
 

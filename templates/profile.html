@@ -170,24 +170,31 @@
           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md">
           Friends List
         </a>
+        <!-- In the header section -->
+        <!-- ... existing settings button ... -->
         {% else %} {% if is_friend %}
         <button
-          onclick="toggleFollow({{ user.id }})"
-          class="px-3 py-1 rounded-md text-white bg-gray-600 hover:bg-gray-700">
-          Unfollow
+          data-friend-action="unfriend"
+          data-user-id="{{ user.id }}"
+          class="px-3 py-1 rounded-md text-white bg-red-500 hover:bg-red-600">
+          Unfriend
         </button>
         {% elif friend_request_sent %}
         <button
+          data-friend-action="cancel"
+          data-user-id="{{ user.id }}"
           class="px-3 py-1 rounded-md text-white bg-yellow-500 hover:bg-yellow-600">
-          Request Sent
+          Cancel Request
         </button>
         {% else %}
         <button
-          onclick="toggleFollow({{ user.id }})"
+          data-friend-action="send"
+          data-user-id="{{ user.id }}"
           class="px-3 py-1 rounded-md text-white bg-green-500 hover:bg-green-600">
           Follow
         </button>
         {% endif %} {% endif %}
+
         <button title="Message" class="profile-icon-button">
           <i data-feather="message-circle"></i>
         </button>
@@ -227,18 +234,368 @@
           {% endif %}
         </section>
 
-        <!-- Analytics -->
-        <section class="bg-white rounded-xl shadow p-4">
-          <h2 class="text-lg font-semibold mb-2">Analytics</h2>
-          <div class="text-xs text-gray-600 space-y-1">
-            <p><strong>Views:</strong> 1,234</p>
-            <p><strong>Likes:</strong> 567</p>
-            <p><strong>Comments:</strong> 123</p>
-            <p><strong>Shares:</strong> 45</p>
-            <p><strong>Followers:</strong> 890</p>
+        <!-- Modern Analytics Section -->
+        <section class="bg-white rounded-xl shadow p-4 mt-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Profile Analytics</h2>
+            <div class="flex gap-2">
+              <button class="time-filter active" data-period="week">7d</button>
+              <button class="time-filter" data-period="month">30d</button>
+              <button class="time-filter" data-period="year">1y</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Profile Visits Card -->
+            <div
+              class="analytics-card bg-gradient-to-br from-blue-50 to-indigo-50">
+              <div class="icon-wrapper bg-blue-100 text-blue-600">
+                <i data-feather="users"></i>
+              </div>
+              <div class="metric-value">{{ total_visits }}</div>
+              <div class="metric-title">Profile Visits</div>
+              <div class="metric-trend">
+                <span class="trend-value text-blue-600">+12%</span> from last
+                week
+              </div>
+            </div>
+
+            <!-- Total Likes Card -->
+            <div
+              class="analytics-card bg-gradient-to-br from-rose-50 to-pink-50">
+              <div class="icon-wrapper bg-rose-100 text-rose-600">
+                <i data-feather="heart"></i>
+              </div>
+              <div class="metric-value">{{ total_likes }}</div>
+              <div class="metric-title">Total Likes</div>
+              <div class="metric-trend">
+                <span class="trend-value text-rose-600">+8%</span> from last
+                week
+              </div>
+            </div>
+
+            <!-- Total Comments Card -->
+            <div
+              class="analytics-card bg-gradient-to-br from-cyan-50 to-teal-50">
+              <div class="icon-wrapper bg-cyan-100 text-cyan-600">
+                <i data-feather="message-circle"></i>
+              </div>
+              <div class="metric-value">{{ total_comments }}</div>
+              <div class="metric-title">Total Comments</div>
+              <div class="metric-trend">
+                <span class="trend-value text-cyan-600">+5%</span> from last
+                week
+              </div>
+            </div>
+
+            <!-- Total Bookmarks Card -->
+            <div
+              class="analytics-card bg-gradient-to-br from-amber-50 to-orange-50">
+              <div class="icon-wrapper bg-amber-100 text-amber-600">
+                <i data-feather="bookmark"></i>
+              </div>
+              <div class="metric-value">{{ total_bookmarks }}</div>
+              <div class="metric-title">Total Bookmarks</div>
+              <div class="metric-trend">
+                <span class="trend-value text-amber-600">+15%</span> from last
+                week
+              </div>
+            </div>
+          </div>
+
+          <!-- Engagement Chart -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-semibold text-gray-700">Engagement Overview</h3>
+              <div class="text-xs text-gray-500 flex gap-2">
+                <span class="flex items-center"
+                  ><div class="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+                  Visits</span
+                >
+                <span class="flex items-center"
+                  ><div class="w-3 h-3 bg-rose-500 rounded-full mr-1"></div>
+                  Likes</span
+                >
+                <span class="flex items-center"
+                  ><div class="w-3 h-3 bg-cyan-500 rounded-full mr-1"></div>
+                  Comments</span
+                >
+              </div>
+            </div>
+            <canvas id="engagementChart" height="180"></canvas>
+          </div>
+
+          <!-- Engagement Score -->
+          <div class="pt-4 border-t border-gray-100">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <h3 class="font-semibold text-gray-700">Engagement Score</h3>
+                <p class="text-xs text-gray-500">Based on your activity</p>
+              </div>
+              <span class="text-sm font-medium text-blue-600">84/100</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-1">
+              <div
+                class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full"
+                style="width: 84%"></div>
+            </div>
+            <p class="text-xs text-gray-500">Higher than 76% of users</p>
           </div>
         </section>
       </aside>
+
+      <!-- Add this to the bottom of your page -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          feather.replace();
+
+          // Engagement Chart
+          const ctx = document
+            .getElementById("engagementChart")
+            .getContext("2d");
+          const engagementChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+              datasets: [
+                {
+                  label: "Visits",
+                  data: [12, 19, 15, 22, 18, 24, 30],
+                  borderColor: "#3b82f6",
+                  backgroundColor: "rgba(59, 130, 246, 0.1)",
+                  tension: 0.4,
+                  fill: true,
+                },
+                {
+                  label: "Likes",
+                  data: [8, 12, 10, 15, 20, 18, 25],
+                  borderColor: "#ec4899",
+                  backgroundColor: "rgba(236, 72, 153, 0.1)",
+                  tension: 0.4,
+                  fill: true,
+                },
+                {
+                  label: "Comments",
+                  data: [3, 5, 7, 6, 9, 12, 15],
+                  borderColor: "#06b6d4",
+                  backgroundColor: "rgba(6, 182, 212, 0.1)",
+                  tension: 0.4,
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+                tooltip: {
+                  mode: "index",
+                  intersect: false,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    drawBorder: false,
+                  },
+                  ticks: {
+                    precision: 0,
+                  },
+                },
+                x: {
+                  grid: {
+                    display: false,
+                  },
+                },
+              },
+              interaction: {
+                mode: "nearest",
+                axis: "x",
+                intersect: false,
+              },
+              elements: {
+                point: {
+                  radius: 4,
+                  hoverRadius: 6,
+                },
+              },
+            },
+          });
+
+          // Time period filtering
+          document.querySelectorAll(".time-filter").forEach((button) => {
+            button.addEventListener("click", function () {
+              document.querySelectorAll(".time-filter").forEach((btn) => {
+                btn.classList.remove("active");
+              });
+              this.classList.add("active");
+
+              // Update chart based on selected period
+              const period = this.dataset.period;
+              let newData;
+
+              switch (period) {
+                case "week":
+                  newData = {
+                    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                    datasets: [
+                      { data: [12, 19, 15, 22, 18, 24, 30] },
+                      { data: [8, 12, 10, 15, 20, 18, 25] },
+                      { data: [3, 5, 7, 6, 9, 12, 15] },
+                    ],
+                  };
+                  break;
+                case "month":
+                  newData = {
+                    labels: ["Wk1", "Wk2", "Wk3", "Wk4"],
+                    datasets: [
+                      { data: [85, 92, 78, 95] },
+                      { data: [60, 72, 65, 80] },
+                      { data: [25, 30, 42, 50] },
+                    ],
+                  };
+                  break;
+                case "year":
+                  newData = {
+                    labels: [
+                      "Jan",
+                      "Feb",
+                      "Mar",
+                      "Apr",
+                      "May",
+                      "Jun",
+                      "Jul",
+                      "Aug",
+                      "Sep",
+                      "Oct",
+                      "Nov",
+                      "Dec",
+                    ],
+                    datasets: [
+                      {
+                        data: [
+                          320, 280, 300, 350, 380, 400, 420, 450, 430, 470, 490,
+                          520,
+                        ],
+                      },
+                      {
+                        data: [
+                          220, 200, 240, 280, 300, 320, 350, 380, 360, 390, 410,
+                          450,
+                        ],
+                      },
+                      {
+                        data: [
+                          80, 90, 110, 120, 130, 150, 160, 170, 180, 190, 210,
+                          230,
+                        ],
+                      },
+                    ],
+                  };
+                  break;
+              }
+
+              engagementChart.data.labels = newData.labels;
+              engagementChart.data.datasets.forEach((dataset, i) => {
+                dataset.data = newData.datasets[i].data;
+              });
+              engagementChart.update();
+            });
+          });
+
+          // Hover effect for cards
+          document.querySelectorAll(".analytics-card").forEach((card) => {
+            card.addEventListener("mouseenter", function () {
+              this.style.transform = "translateY(-5px)";
+              this.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.08)";
+            });
+
+            card.addEventListener("mouseleave", function () {
+              this.style.transform = "translateY(0)";
+              this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.05)";
+            });
+          });
+        });
+      </script>
+
+      <style>
+        .analytics-card {
+          position: relative;
+          border-radius: 12px;
+          padding: 16px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .analytics-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .icon-wrapper {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .icon-wrapper i {
+          width: 18px;
+          height: 18px;
+        }
+
+        .metric-value {
+          font-size: 24px;
+          font-weight: 700;
+          margin-top: 8px;
+          color: #1f2937;
+        }
+
+        .metric-title {
+          font-size: 13px;
+          color: #6b7280;
+          margin-top: 2px;
+        }
+
+        .metric-trend {
+          font-size: 11px;
+          margin-top: 8px;
+          color: #6b7280;
+        }
+
+        .trend-value {
+          font-weight: 600;
+        }
+
+        .time-filter {
+          background: #f3f4f6;
+          border-radius: 20px;
+          padding: 4px 10px;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .time-filter.active {
+          background: #3b82f6;
+          color: white;
+        }
+
+        .time-filter:hover:not(.active) {
+          background: #e5e7eb;
+        }
+      </style>
 
       <!-- Main Content -->
       <section class="lg:col-span-6">
@@ -304,14 +661,11 @@
                 </div>
               </div>
               <div class="flex space-x-2">
-                <button
-                  onclick="respondRequest({{ request.id }}, 'accept')"
-                  class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">
+                <!-- Change this in profile.html -->
+                <button onclick="respondRequest({{ request.id }}, 'accept')">
                   Accept
                 </button>
-                <button
-                  onclick="respondRequest({{ request.id }}, 'decline')"
-                  class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-3 py-1 rounded-md">
+                <button onclick="respondRequest({{ request.id }}, 'decline')">
                   Decline
                 </button>
               </div>
@@ -525,7 +879,66 @@
       </div>
     </div>
 
+    <!-- Add this JavaScript BEFORE the closing </body> tag -->
     <script>
+      // GLOBAL FUNCTIONS (MUST BE DEFINED FIRST)
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      async function sendFriendRequest(userId) {
+        try {
+          const response = await fetch(`/friend-request/send/${userId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+          });
+          const data = await response.json();
+          if (data.status === "request_sent") location.reload();
+        } catch (error) {
+          console.error("Error sending friend request:", error);
+        }
+      }
+
+      async function cancelRequest(userId) {
+        try {
+          const response = await fetch(`/friend-request/cancel/${userId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+          });
+          const data = await response.json();
+          if (data.status === "request_canceled") location.reload();
+        } catch (error) {
+          console.error("Error canceling request:", error);
+        }
+      }
+
+      async function unfriend(userId) {
+        try {
+          const response = await fetch(`/friend-request/unfriend/${userId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+          });
+          const data = await response.json();
+          if (data.status === "unfriended") location.reload();
+        } catch (error) {
+          console.error("Error unfriending:", error);
+        }
+      }
+
+      // DOM CONTENT LOADED HANDLER
       document.addEventListener("DOMContentLoaded", () => {
         feather.replace();
 
@@ -630,17 +1043,17 @@
             const commentEl = document.createElement("div");
             commentEl.className = "comment-item";
             commentEl.innerHTML = `
-          <div class="flex items-start">
-            <div class="flex-1">
-              <span class="username">${comment.username}</span>
-              <p class="text">${comment.text}</p>
-              <p class="time">${comment.time}</p>
-            </div>
-            <button class="text-gray-400 hover:text-red-500">
-              <i data-feather="heart" class="w-4 h-4"></i>
-            </button>
-          </div>
-        `;
+              <div class="flex items-start">
+                <div class="flex-1">
+                  <span class="username">${comment.username}</span>
+                  <p class="text">${comment.text}</p>
+                  <p class="time">${comment.time}</p>
+                </div>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i data-feather="heart" class="w-4 h-4"></i>
+                </button>
+              </div>
+            `;
             commentsContainer.appendChild(commentEl);
           });
 
@@ -690,87 +1103,46 @@
           });
         });
 
-        // Add interaction button functionality
-        document.addEventListener("click", function (e) {
-          const button = e.target.closest(".interaction-button");
-          if (!button) return;
+        // Updated JavaScript function
+        document.querySelectorAll("[data-friend-action]").forEach((button) => {
+          button.addEventListener("click", function () {
+            const action = this.dataset.friendAction;
+            const userId = this.dataset.userId;
 
-          e.stopPropagation();
-          const action = button.dataset.action;
-          const countEl = button.querySelector(".interaction-count");
-          let count = parseInt(countEl.textContent) || 0;
-
-          switch (action) {
-            case "like":
-              countEl.textContent = count + 1;
-              button.classList.add("text-red-500");
-              break;
-            case "comment":
-              // Focus comment input
-              document.querySelector("#postModal input[type='text']").focus();
-              break;
-            case "bookmark":
-              countEl.textContent = count + 1;
-              button.classList.add("text-yellow-500");
-              break;
-          }
+            if (action === "send") sendFriendRequest(userId);
+            if (action === "cancel") cancelRequest(userId);
+            if (action === "unfriend") unfriend(userId);
+          });
         });
+      });
+      async function respondRequest(requestId, action) {
+        try {
+          const response = await fetch(
+            `/friend-request/respond/${requestId}/`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCookie("csrftoken"),
+              },
+              body: `action=${action}`,
+            }
+          );
 
-        // Friend request handling
-        function respondRequest(requestId, action) {
-          fetch(`/friend-request/respond/${requestId}/`, {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": getCookie("csrftoken"),
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: `action=${action}`,
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.status === "accepted" || data.status === "declined") {
-                document.getElementById(`friend-request-${requestId}`).remove();
-              }
-            });
-        }
-
-        // Follow/unfollow
-        function toggleFollow(userId) {
-          fetch(`/toggle-follow/${userId}/`, {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": getCookie("csrftoken"),
-            },
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.status === "request_sent") {
-                location.reload(); // Refresh to show "Request Sent"
-              } else if (data.status === "unfollowed") {
-                location.reload(); // Refresh to show "Follow"
-              }
-            });
-        }
-
-        // CSRF helper
-        function getCookie(name) {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let cookie of cookies) {
-              cookie = cookie.trim();
-              if (cookie.startsWith(name + "=")) {
-                cookieValue = decodeURIComponent(
-                  cookie.substring(name.length + 1)
-                );
-                break;
-              }
+          const data = await response.json();
+          if (data.status === "accepted" || data.status === "declined") {
+            // Remove the friend request from the DOM
+            const element = document.getElementById(
+              `friend-request-${requestId}`
+            );
+            if (element) {
+              element.remove();
             }
           }
-          return cookieValue;
+        } catch (error) {
+          console.error("Error responding to friend request:", error);
         }
-      });
+      }
     </script>
   </body>
 </html>
-a
