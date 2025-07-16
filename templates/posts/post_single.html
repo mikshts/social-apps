@@ -1,30 +1,29 @@
 <!-- templates/posts/post_single.html -->
-{%load static%}
+{% load static %}
 
 <div class="feed" id="post-{{ post.id }}">
   <div class="head">
     <div class="user" style="display: flex; align-items: center; gap: 10px">
       <a
         class="profile-photo"
-        href="{% url 'public_profile' post.user.username %}
-">
+        href="{% url 'public_profile' post.user.username %}">
         <img
           src="{{ post.user.profile.profileimg.url|default:'/static/blank_profile_picture.png' }}"
           alt="{{ post.user.username }}'s profile picture" />
       </a>
       <div class="info">
         <h3 style="display: flex; align-items: center; gap: 6px">
-          {{ post.user.username }} {% if post.user.profile.is_online%}
-          <span class="online-dot"></span>
-          {% else%}
-          <span class="offline-dot"></span>
+          {{ post.user.username }}
+          {% if post.user.profile.is_online %}
+            <span class="online-dot"></span>
+          {% else %}
+            <span class="offline-dot"></span>
           {% endif %}
         </h3>
-
         <small
           class="post-time"
-          data-created-at="{{ post.created_at|date:'c' }}"
-          >{{ post.created_at|timesince }} ago
+          data-created-at="{{ post.created_at|date:'c' }}">
+          {{ post.created_at|timesince }} ago
         </small>
         |
         <small>{{ post.user.profile.location }}</small>
@@ -32,123 +31,110 @@
     </div>
 
     {% if user != post.user %}
-    <span class="chat">
-      <button
-        type="button"
-        title="Chat"
-        class="chat-btn"
-        onclick="openChat('{{ post.user.id }}')">
-        <span class="material-symbols-outlined">chat</span>
-      </button>
-    </span>
-    {% endif %} {% if user == post.user %}
-    <span class="edit">
-      <button
-        type="button"
-        title="Delete"
-        style="all: unset; cursor: pointer"
-        onclick="deletePost('{{ post.id }}')">
-        <!-- gamiton and post.id kuwa sang psot sa bookmarks -->
-        <span class="material-symbols-outlined">...</span>
-      </button>
-    </span>
+      <span class="chat">
+        <button
+          type="button"
+          title="Chat"
+          class="chat-btn"
+          onclick="openChat('{{ post.user.id }}')">
+          <span class="material-symbols-outlined">chat</span>
+        </button>
+      </span>
+    {% endif %}
+    
+    {% if user == post.user %}
+      <span class="edit">
+        <button
+          type="button"
+          title="Delete"
+          style="all: unset; cursor: pointer"
+          onclick="deletePost('{{ post.id }}')">
+          <span class="material-symbols-outlined">more_horiz</span>
+        </button>
+      </span>
     {% endif %}
   </div>
 
   {% if post.image %}
-  <div onclick="openCommentPopup('{{ post.id }}')" class="photo">
-    <img src="{{ post.image.url }}" alt="Post Image" />
-  </div>
+    <div onclick="openCommentPopup('{{ post.id }}')" class="photo">
+      <img src="{{ post.image.url }}" alt="Post Image" />
+    </div>
   {% endif %}
+
   <div class="caption">
     <p><b>{{ post.user.username }}</b> {{ post.caption }}</p>
   </div>
-  <!-- Action Buttons ----------------->
+
+  <!-- Action Buttons -->
   <div class="action-buttons">
     <div class="interaction-buttons">
-      <!--like heart-->
+      <!-- Like heart -->
       <span id="like-btn-{{ post.id }}" onclick="toggleLike('{{ post.id }}')">
         <i class="uil uil-heart {% if post.user_liked %}liked{% endif %}"></i>
       </span>
-      <!--comment bubble-->
+      <!-- Comment bubble -->
       <span>
         <i
           class="uil uil-comment-dots"
           onclick="openCommentPopup('{{ post.id }}')"></i>
       </span>
-      <!--share arrow-->
+      <!-- Share arrow -->
       <span><i class="uil uil-share-alt"></i></span>
     </div>
     <div class="bookmark">
       <span onclick="toggleBookmark('{{ post.id }}', this)">
-        <i
-          class="uil uil-bookmark-full {% if post.bookmarked %}bookmarked{% endif %}"></i>
+        <i class="uil uil-bookmark-full {% if post.bookmarked %}bookmarked{% endif %}"></i>
       </span>
     </div>
-
-    <style>
-      .bookmarked {
-        color: gold;
-        transition: color 0.3s ease, transform 0.2s;
-      }
-
-      .uil-bookmark-full {
-        cursor: pointer;
-      }
-
-      .uil-bookmark-full.animate {
-        transform: scale(1.3);
-      }
-    </style>
   </div>
 
-  <!-- Placeholder for likes -->
+  <!-- Likes section -->
   <div
     class="like-section"
     id="liked-by-{{ post.id }}"
     data-post-id="{{ post.id }}">
     <div class="like-section-content">
       {% if post.liked_users %}
-      <span>Liked by</span>
-      <div class="like-section-users">
-        {% for user in post.liked_users %}
-        <img
-          src="{{ user.profile.profileimg.url }}"
-          alt="{{ user.username }}" />
-        {% endfor %}
-      </div>
-      <span>and</span>
-      <span id="like-count-{{ post.id }}">{{ post.no_of_likes }}</span>
-      <span>others</span>
+        <span>Liked by</span>
+        <div class="like-section-users">
+          {% for user in post.liked_users %}
+            <img
+              src="{{ user.profile.profileimg.url }}"
+              alt="{{ user.username }}" />
+          {% endfor %}
+        </div>
+        <span>and</span>
+        <span id="like-count-{{ post.id }}">{{ post.no_of_likes }}</span>
+        <span>others</span>
       {% else %}
-      <span id="like-count-{{ post.id }}">0</span> likes {% endif %}
+        <span id="like-count-{{ post.id }}">0</span> likes
+      {% endif %}
     </div>
   </div>
 </div>
 
-<!-- Modal Structure feed for comment  -->
+<!-- Comment Modal -->
 <div
   class="feed-modal"
   id="commentModal-{{ post.id }}"
-  onclick="closeCommentPopup('{{ post.id }}')">
+  style="display: none;">
   <div class="modal-content" onclick="event.stopPropagation()">
-    <span class="modal-close-btn" onclick="closeCommentPopup('{{ post.id }}')"
-      >&times;</span
-    >
+    <span class="modal-close-btn" onclick="closeCommentPopup('{{ post.id }}')">&times;</span>
 
     <!-- Profile Header -->
     <div class="modal-profile-info">
       <div class="modal-user">
         <div class="modal-profile-photo">
           <img
-            src="{{ post.user.profile.profileimg.url|default:'/static/blank_profile_picture.png' }}" />
+            src="{{ post.user.profile.profileimg.url|default:'/static/blank_profile_picture.png' }}"
+            alt="{{ post.user.username }}'s profile picture" />
         </div>
         <div class="modal-info">
           <h3>{{ post.user.username }}</h3>
           <small
             class="post-time"
-            data-created-at="{{ post.created_at|date:'c' }}"
-            >{{ post.created_at|timesince }} ago
+            data-created-at="{{ post.created_at|date:'c' }}">
+            {{ post.created_at|timesince }} ago
           </small>
           |
           <small>{{ post.user.profile.location }}</small>
@@ -161,19 +147,20 @@
       <!-- Left Side - Image -->
       <div class="modal-large-photo">
         {% if post.image %}
-        <div class="modal-image-slider">
-          <div class="modal-image-slide">
-            <img src="{{ post.image.url }}" alt="Post Image" />
+          <div class="modal-image-slider">
+            <div class="modal-image-slide">
+              <img src="{{ post.image.url }}" alt="Post Image" />
+            </div>
+            <!-- Add more slides here if you have multiple images -->
           </div>
-        </div>
-        {% endif %}
 
-        <!-- Slider Controls -->
-        <div class="slider-controls">
-          <button class="slide-btn prev-slide">❮</button>
-          <button class="slide-btn next-slide">❯</button>
-        </div>
-        <div class="slide-dots"></div>
+          <!-- Slider Controls (only show if multiple images) -->
+          <div class="slider-controls" style="display: none;">
+            <button class="slide-btn prev-slide" type="button">❮</button>
+            <button class="slide-btn next-slide" type="button">❯</button>
+          </div>
+          <div class="slide-dots"></div>
+        {% endif %}
       </div>
 
       <!-- Right Side - Comments -->
@@ -183,22 +170,23 @@
         <!-- Comments List -->
         <div class="modal-all-comments">
           {% for comment in post.comments.all %}
-          <div class="modal-comment">
-            <div class="modal-comment-avatar">
-              <img
-                src="{{ comment.user.profile.profileimg.url|default:'/static/assets/images/default-avatar.jpg' }}" />
+            <div class="modal-comment">
+              <div class="modal-comment-avatar">
+                <img
+                  src="{{ comment.user.profile.profileimg.url|default:'/static/assets/images/default-avatar.jpg' }}"
+                  alt="{{ comment.user.username }}" />
+              </div>
+              <div class="modal-comment-body">
+                <p class="modal-comment-author">{{ comment.user.username }}</p>
+                <p class="modal-comment-text">{{ comment.text }}</p>
+              </div>
             </div>
-            <div class="modal-comment-body">
-              <p class="modal-comment-author">{{ comment.user.username }}</p>
-              <p class="modal-comment-text">{{ comment.text }}</p>
-            </div>
-          </div>
           {% empty %}
-          <p class="no-comments-msg">No comments yet. Be the first!</p>
+            <p class="no-comments-msg">No comments yet. Be the first!</p>
           {% endfor %}
         </div>
 
-        <!-- Fixed Comment Input -->
+        <!-- Comment Input Form -->
         <form
           method="POST"
           action="{% url 'add_comment' post.id %}"
@@ -214,7 +202,7 @@
               required />
             <button type="submit">
               <span class="btn-text">Send</span>
-              <span class="btn-spinner" style="display: none">⏳</span>
+              <span class="btn-spinner" style="display: none;">⏳</span>
             </button>
           </div>
         </form>
@@ -222,29 +210,8 @@
     </div>
   </div>
 </div>
+
 <script>
-  function toggleBookmark(postId, elem) {
-    fetch("{% url 'toggle_bookmark' %}", {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": "{{ csrf_token }}",
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `post_id=${postId}`,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const icon = elem.querySelector("i");
-        icon.classList.add("animate");
-
-        if (data.status === "added") {
-          icon.classList.add("bookmarked");
-        } else {
-          icon.classList.remove("bookmarked");
-        }
-
-        // Remove animation after short delay
-        setTimeout(() => icon.classList.remove("animate"), 200);
-      });
-  }
+// Set bookmark URL for the JavaScript
+window.bookmarkUrl = "{% url 'toggle_bookmark' %}";
 </script>
