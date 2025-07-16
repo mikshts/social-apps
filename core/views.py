@@ -1117,3 +1117,7 @@ def swipe_story(request):
     story_index = request.GET.get('story', 0)
     return render(request, 'swipe_story.html', {'story_index': story_index})
 
+
+
+def chat_templates(request):
+    return render(request, 'chat_templates.html') 

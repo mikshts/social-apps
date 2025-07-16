@@ -18,7 +18,7 @@
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
       rel="stylesheet" />
-    
+
     <link
       rel="stylesheet"
       href="https://unicons.iconscout.com/release/v2.1.6/css/unicons.css" />
@@ -392,12 +392,14 @@
           <!-- Message Notifications Icon -->
 
           <!-- Message Button (Floating Bottom Right) -->
-          <div id="message-float-button" class="menu-item">
-            <i class="uil uil-envelope-alt">
-              <small class="notification-count">6</small>
-            </i>
-            <h3>Messages</h3>
-          </div>
+          <a href="{% url 'chat_templates'%}">
+            <div id="message-float-button" class="menu-item">
+              <i class="uil uil-envelope-alt">
+                <small class="notification-count">6</small>
+              </i>
+              <h3>Messages</h3>
+            </div>
+          </a>
 
           <div id="chat-section" class="chat-popup hidden">
             <div class="messages">

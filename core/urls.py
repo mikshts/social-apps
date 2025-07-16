@@ -64,4 +64,8 @@ urlpatterns = [
     path('survey/contact/', views.survey_contact, name='survey_contact'),
     path('survey/whydata/', views.survey_whydata, name='survey_whydata'),   
     path('survey/', views.survey, name='survey'),
+
+    #for chat
+    path('chat_templates/', views.chat_templates, name='chat_templates'),
+
 ]
