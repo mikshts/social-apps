@@ -185,7 +185,7 @@
             <!-- Story item (can be repeated with different images) -->
             <div
               class="story"
-              onclick="openStory(0)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -198,7 +198,7 @@
 
             <div
               class="story"
-              onclick="openStory(0)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -213,7 +213,7 @@
 
             <div
               class="story"
-              onclick="openStory(0)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -226,7 +226,7 @@
 
             <div
               class="story"
-              onclick="openStory(0)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -239,7 +239,7 @@
 
             <div
               class="story"
-              onclick="openStory(0)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -252,7 +252,7 @@
 
             <div
               class="story"
-              onclick="openStory(0)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -265,7 +265,7 @@
 
             <div
               class="story"
-              onclick="openStory(1)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -278,7 +278,7 @@
 
             <div
               class="story"
-              onclick="openStory(2)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -291,7 +291,7 @@
 
             <div
               class="story"
-              onclick="openStory(3)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center/cover;
@@ -304,7 +304,7 @@
 
             <div
               class="story"
-              onclick="openStory(4)"
+              onclick="window.location.href='{% url 'swipe_story' %}?story=0'"
               style="
                 background: url('{% static 'assets/images/story-1.jpg' %}')
                   no-repeat center center / cover;
@@ -314,47 +314,9 @@
               </div>
               <p class="name">Your Story</p>
             </div>
-
-            <!-- Repeat similar structure for more stories -->
           </div>
           <!-- Story Viewer -->
           <!-- Story Viewer -->
-          <div id="storyViewer" class="story-viewer hidden">
-            <div class="story-container">
-              <div class="progress-bar">
-                <div class="progress"></div>
-              </div>
-              <div class="story-info">
-                <img
-                  src="{%static 'assets/images/maico.jpg'%}"
-                  alt="Profile"
-                  class="story-profile" />
-                <div class="story-text">
-                  <span class="story-username">John Maico</span>
-                  <span class="story-timezone">1h ago · UTC+8</span>
-                </div>
-              </div>
-
-              <img
-                id="fullStoryImage"
-                src=""
-                alt="Story Image"
-                class="story-image" />
-
-              <div class="story-actions">
-                <button class="action-btn close-bottom-btn">✖</button>
-                <button class="action-btn message-bottom-btn">
-                  Send a Thought
-                </button>
-                <button class="action-btn like-bottom-btn">❤️</button>
-              </div>
-
-              <span class="close-story" onclick="closeStory()">✖</span>
-              <span class="prev-story" onclick="prevStory()">⟨</span>
-              <span class="next-story" onclick="nextStory()">⟩</span>
-            </div>
-          </div>
-          <!----------------- END OF STORIES -------------------->
 
           <!--CREATE POST-------------------------------->
           <!-- Trigger Section -->

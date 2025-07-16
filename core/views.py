@@ -1108,3 +1108,12 @@ def user_profile(request, username):
         'user_profile': user_profile,
         'posts': posts
     })
+
+
+#stories
+from django.shortcuts import render
+
+def swipe_story(request):
+    story_index = request.GET.get('story', 0)
+    return render(request, 'swipe_story.html', {'story_index': story_index})
+

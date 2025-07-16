@@ -1,0 +1,10 @@
+    <nav
+      class="sticky top-0 bg-white shadow-md z-50 py-2 px-4 flex justify-between items-center">
+      <a href="{% url 'index' %}" class="flex items-center space-x-2">
+        <i data-feather="arrow-left"></i>
+        <span class="text-lg font-semibold">Home</span>
+      </a>
+      <div class="text-sm text-gray-500">
+        Hi! I'm <strong>{{ user.username }}</strong>
+      </div>
+    </nav>

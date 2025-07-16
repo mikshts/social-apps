@@ -1,3 +1,5 @@
+/* Base Styles (largely remain the same for larger screens) */
+
 /* ADDED: Styles for the survey completion banner */
 .survey-completion-banner {
   background-color: #e0f2f7; /* Light blue background */
@@ -13,6 +15,7 @@
   font-size: 1.1em;
   font-weight: 500;
   /* !!! IMPORTANT: Adjust this value based on your actual navbar height + desired spacing !!! */
+  /* We'll make this responsive below */
   margin-top: 100px; /* Example: If navbar is 70px tall, 70px + 30px gap = 100px */
 }
 
@@ -23,7 +26,7 @@
 
 /* MODIFIED: Adjusted survey-container margin-top to follow the banner */
 .survey-container {
-  max-width: 700px;
+  max-width: 700px; /* This will be overridden by media queries */
   margin: 0 auto;
   background: #fff;
   border-radius: 10px;
@@ -94,39 +97,31 @@ h3 {
 /* --- MODIFICATIONS FOR HOBBIES SECTION ONLY START HERE --- */
 
 .hobbies-section-scrollable {
-  /* This outer container provides the horizontal scroll */
   overflow-x: auto;
-  /* white-space: nowrap; (Removed - we want wrapping within the height) */
   margin-bottom: 15px;
-  padding-bottom: 10px; /* Add some padding if the scrollbar is obscuring content */
-
-  /* Set a height that accommodates exactly three rows of checkboxes + gaps */
-  /* Calculation: (Label height + vertical padding + border) * 3 + (gap between rows * 2) */
-  /* Assuming label height approx 36px (8px padding top/bottom + 2px border top/bottom) */
+  padding-bottom: 10px;
   height: calc(
     (36px + 10px) * 3 + 10px * 2
   ); /* Approx. 168px - adjust 36px if your label's natural height is different */
-  display: flex; /* Helps ensure inner flex container behaves as expected */
-  align-items: flex-start; /* Align content to the top within the scrollable area */
+  display: flex;
+  align-items: flex-start;
 }
 
 .hobbies-section-scrollable .custom-checkbox-group {
-  /* This inner container lays out items in columns and wraps horizontally */
   display: flex;
-  flex-direction: column; /* Items stack vertically to form columns */
-  flex-wrap: wrap; /* Columns wrap horizontally */
-  gap: 10px; /* Gap between items (both row and column) */
-  height: 100%; /* Important: Makes the flex container fill the parent's fixed height */
-  margin-bottom: 0; /* Remove redundant margin */
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 10px;
+  height: 100%;
+  margin-bottom: 0;
   flex-grow: 0;
-  flex-shrink: 0; /* Prevents shrinking, ensures it takes full width needed for columns */
-  align-content: flex-start; /* Aligns columns to the start (left) */
+  flex-shrink: 0;
+  align-content: flex-start;
 }
 
 .hobbies-section-scrollable .custom-checkbox {
-  /* Ensure individual checkboxes maintain their size */
-  flex-shrink: 0; /* Prevent shrinking */
-  display: block; /* Ensure it takes full width within its flex column */
+  flex-shrink: 0;
+  display: block;
 }
 
 /* --- NO CHANGES BELOW THIS LINE --- */
@@ -144,6 +139,10 @@ h3 {
   color: #333;
   cursor: pointer;
   transition: all 0.3s ease;
+  /* ADDED: Ensure label text doesn't overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .custom-checkbox input[type="checkbox"]:checked + label {
@@ -152,4 +151,131 @@ h3 {
   color: white;
   font-weight: bold;
   box-shadow: 0 0 5px rgba(142, 68, 173, 0.5);
-} 
+}
+
+/* ========================================= */
+/* MEDIA QUERIES FOR RESPONSIVENESS    */
+/* ========================================= */
+
+/* Mobile devices (portrait and landscape, up to 767px) */
+@media (max-width: 767px) {
+  /* General adjustments for smaller screens */
+  body {
+    /* This is a good place for overall font size adjustment if needed */
+    font-size: 0.95em;
+  }
+
+  /* Survey Completion Banner */
+  .survey-completion-banner {
+    padding: 10px 15px; /* Reduce padding */
+    margin: 15px auto; /* Adjust margin */
+    font-size: 1em; /* Slightly smaller font */
+    margin-top: 80px; /* Adjust for potentially smaller navbar */
+    max-width: calc(
+      100% - 40px
+    ); /* Make it fluid, with 20px padding on each side */
+    box-sizing: border-box; /* Include padding in width calculation */
+  }
+
+  .survey-completion-banner .material-symbols-outlined {
+    font-size: 24px; /* Smaller icon */
+  }
+
+  /* Main Survey Container */
+  .survey-container {
+    padding: 15px; /* Reduce padding */
+    margin: 15px auto; /* Adjust margin */
+    max-width: calc(100% - 40px); /* Fluid width, 20px padding on each side */
+    box-sizing: border-box; /* Include padding in width calculation */
+  }
+
+  /* Form headings */
+  h3 {
+    font-size: 1.3em; /* Slightly smaller heading */
+  }
+
+  /* Navigation buttons */
+  .navigation button {
+    padding: 8px 15px; /* Smaller padding */
+    font-size: 0.9em; /* Smaller font */
+    margin: 3px; /* Reduce margin between buttons */
+  }
+
+  /* Checkbox groups (general) */
+  .custom-checkbox-group {
+    gap: 8px; /* Slightly smaller gap */
+  }
+
+  /* Individual checkbox labels */
+  .custom-checkbox label {
+    padding: 6px 12px; /* Smaller padding */
+    font-size: 0.9em; /* Smaller font */
+  }
+
+  /* Hobbies Section specific adjustments for mobile */
+  .hobbies-section-scrollable {
+    /* Adjust height for mobile - maybe 2 rows instead of 3, or more flexible */
+    /* If you want it to always show 3 rows and scroll, keep the calc,
+           but if you want it to be more flexible (e.g., 2 rows then scroll), adjust.
+           For this example, let's make it 2 rows on mobile to reduce height,
+           but still allow horizontal scrolling if many items. */
+    height: calc((36px + 10px) * 2 + 10px * 1); /* Approx. 112px for 2 rows */
+    padding-bottom: 5px; /* Less padding if scrollbar is smaller */
+    /* Consider removing align-items: flex-start if you want it centered vertically in shorter height */
+    align-items: center; /* Center items vertically within the shorter scrollable area */
+  }
+
+  .hobbies-section-scrollable .custom-checkbox-group {
+    gap: 8px; /* Consistent smaller gap */
+  }
+}
+
+/* Smaller mobile devices (e.g., iPhone SE, narrow screens up to 480px) */
+@media (max-width: 480px) {
+  /* Further reduce padding/margins */
+  .survey-completion-banner {
+    padding: 8px 10px;
+    font-size: 0.9em;
+    gap: 8px;
+    margin-top: 70px; /* Adjust for very small top margins */
+  }
+
+  .survey-completion-banner .material-symbols-outlined {
+    font-size: 22px;
+  }
+
+  .survey-container {
+    padding: 10px;
+    margin: 10px auto;
+  }
+
+  h3 {
+    font-size: 1.2em;
+  }
+
+  /* Navigation buttons might need to stack or wrap better */
+  .navigation {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    justify-content: center; /* Center them when they wrap */
+  }
+
+  .navigation button {
+    flex-grow: 1; /* Allow buttons to grow to fill space, but not necessarily stack fully */
+    min-width: 120px; /* Ensure a minimum width for buttons */
+    margin: 4px; /* Adjust margin for wrapped buttons */
+  }
+
+  /* Hobbies Section - consider making it purely horizontal scroll if 2 rows isn't enough */
+  /* If you want it to be a single row on very small devices, adjust height here */
+  .hobbies-section-scrollable {
+    height: calc((36px + 10px) * 1 + 10px * 0); /* Approx. 46px for 1 row */
+    /* If you force 1 row, make sure the labels themselves are not too long
+           or ensure 'text-overflow: ellipsis' is working well */
+  }
+  .hobbies-section-scrollable .custom-checkbox-group {
+    flex-direction: row; /* Force a single row of items for horizontal scroll */
+    flex-wrap: nowrap; /* Prevent wrapping so it only scrolls */
+    height: auto; /* Allow height to adjust to single row */
+  }
+}

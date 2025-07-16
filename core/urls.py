@@ -8,6 +8,8 @@ urlpatterns = [
     path('settings/', profile_view, name='profile_view'),
     path('chat/<int:receiver_id>/', chat_view, name='chat'),
     path('recent-messages/', views.recent_messages, name='recent_messages'),
+    path('swipe-story/', views.swipe_story, name='swipe_story'),
+
 
     # Friend requests (simplified)
     path('friend-request/send/<int:user_id>/', views.send_friend_request, name='send_friend_request'),

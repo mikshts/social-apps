@@ -1,0 +1,915 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spark | Modern Dating App</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #ff6b6b, #ff8e53, #6a11cb);
+        height: 100vh;
+        overflow: hidden;
+        padding-top: 60px; /* Space for fixed navbar */
+        color: #333;
+      }
+      /*navbar*/
+      /* Custom Navbar Styling */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        z-index: 1000; /* Higher than app container */
+      }
+
+      .nav-home-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .nav-user-info {
+        color: #777;
+        font-size: 14px;
+      }
+      /*end of navbar*/
+      .app-container {
+        width: 100%;
+        max-width: 400px;
+        height: calc(90vh - 20px); /* Adjusted height */
+        margin: 10px auto 0; /* Centering with top margin */
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 25px;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .header {
+        padding: 20px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.9);
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: 800;
+        color: #ff6b6b;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo i {
+        margin-right: 8px;
+      }
+
+      .nav-icons {
+        display: flex;
+        gap: 20px;
+      }
+
+      .nav-icons i {
+        font-size: 20px;
+        color: #777;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .nav-icons i:hover {
+        color: #ff6b6b;
+        transform: scale(1.1);
+      }
+
+      .cards-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        padding: 20px;
+      }
+
+      .card {
+        width: 90%;
+        height: 75%;
+        background: white;
+        border-radius: 20px;
+        position: absolute;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: transform 0.5s ease, opacity 0.3s ease;
+        cursor: grab;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card:active {
+        cursor: grabbing;
+      }
+
+      .card-img {
+        height: 75%;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+
+      .card-info {
+        padding: 20px;
+        height: 25%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: white;
+      }
+
+      .name-age {
+        font-size: 28px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .age {
+        font-weight: 400;
+        margin-left: 8px;
+        color: #777;
+      }
+
+      .bio {
+        color: #666;
+        margin-bottom: 10px;
+        line-height: 1.4;
+      }
+
+      .tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tag {
+        background: #f0f0f0;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #555;
+      }
+
+      .indicator {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        color: white;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.3s ease;
+        z-index: 5;
+      }
+
+      .like-indicator {
+        background: linear-gradient(135deg, #4cd964, #2ecc71);
+        right: 20px;
+        left: auto;
+      }
+
+      .dislike-indicator {
+        background: linear-gradient(135deg, #ff2d55, #ff6b6b);
+      }
+
+      .actions {
+        padding: 25px 40px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .action-btn {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        font-size: 28px;
+        color: white;
+      }
+
+      .dislike-btn {
+        background: linear-gradient(135deg, #ff9500, #ff5e3a);
+      }
+
+      .like-btn {
+        background: linear-gradient(135deg, #4cd964, #2ecc71);
+      }
+
+      .super-like-btn {
+        background: linear-gradient(135deg, #5ac8fa, #007aff);
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+
+      .action-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .action-btn:active {
+        transform: scale(0.95);
+      }
+
+      .match-popup {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+      }
+
+      .match-content {
+        background: white;
+        border-radius: 25px;
+        padding: 40px 30px;
+        text-align: center;
+        width: 85%;
+        transform: scale(0.8);
+        transition: transform 0.5s ease;
+      }
+
+      .match-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: #ff6b6b;
+        margin-bottom: 20px;
+      }
+
+      .match-text {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+
+      .match-img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        margin: 0 auto 25px;
+        border: 5px solid #ff6b6b;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .match-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .match-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .match-btn {
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .send-message {
+        background: #ff6b6b;
+        color: white;
+        border: none;
+      }
+
+      .keep-swiping {
+        background: white;
+        color: #ff6b6b;
+        border: 2px solid #ff6b6b;
+      }
+
+      .match-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #777;
+      }
+
+      .empty-state i {
+        font-size: 80px;
+        margin-bottom: 20px;
+        color: #ff6b6b;
+        opacity: 0.7;
+      }
+
+      .empty-state h2 {
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .refresh-btn {
+        margin-top: 20px;
+        padding: 12px 30px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .refresh-btn:hover {
+        background: #ff5252;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-1 {
+        z-index: 5;
+        transform: translateY(0) rotate(0deg);
+      }
+      .card-2 {
+        z-index: 4;
+        transform: translateY(10px) rotate(2deg);
+        opacity: 0.9;
+      }
+      .card-3 {
+        z-index: 3;
+        transform: translateY(20px) rotate(-1deg);
+        opacity: 0.8;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .pulse {
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .heart-animation {
+        position: absolute;
+        font-size: 100px;
+        color: #ff6b6b;
+        opacity: 0;
+        z-index: 20;
+      }
+
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #ff6b6b;
+        opacity: 0;
+        z-index: 90;
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'profile_navbar.html'%}
+    <div class="app-container">
+      <div class="header">
+        <div class="logo">
+          <i class="fas fa-spark"></i>
+          <span>SPARK</span>
+        </div>
+        <div class="nav-icons">
+          <i class="fas fa-search"></i>
+          <i class="fas fa-user-friends"></i>
+          <i class="fas fa-comment-alt"></i>
+          <i class="fas fa-cog"></i>
+        </div>
+      </div>
+
+      <div class="cards-container">
+        <!-- Cards will be dynamically added here -->
+        <div class="empty-state">
+          <i class="fas fa-heart-broken"></i>
+          <h2>No more profiles</h2>
+          <p>Check back later for new matches in your area</p>
+          <button class="refresh-btn">Refresh</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <div class="action-btn dislike-btn">
+          <i class="fas fa-times"></i>
+        </div>
+        <div class="action-btn super-like-btn">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="action-btn like-btn">
+          <i class="fas fa-heart"></i>
+        </div>
+      </div>
+
+      <div class="match-popup">
+        <div class="match-content">
+          <h2 class="match-title">It's a Match!</h2>
+          <div class="match-img">
+            <img
+              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=688&q=80"
+              alt="Match" />
+          </div>
+          <p class="match-text">
+            You and <strong>Alex</strong> liked each other. Start a conversation
+            now!
+          </p>
+          <div class="match-buttons">
+            <button class="match-btn send-message">Send Message</button>
+            <button class="match-btn keep-swiping">Keep Swiping</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Sample user data
+        const users = [
+          {
+            name: "Alex",
+            age: 28,
+            bio: "Adventure seeker and coffee enthusiast. Love hiking and trying new restaurants.",
+            tags: ["Hiking", "Coffee", "Foodie"],
+            image:
+              "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=688&q=80",
+          },
+          {
+            name: "Taylor",
+            age: 25,
+            bio: "Digital artist and gamer. Looking for someone to explore museums and game nights with.",
+            tags: ["Art", "Gaming", "Museums"],
+            image:
+              "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+          },
+          {
+            name: "Jordan",
+            age: 30,
+            bio: "Professional chef who loves traveling. Passionate about sustainable living and yoga.",
+            tags: ["Cooking", "Travel", "Yoga"],
+            image:
+              "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+          },
+          {
+            name: "Morgan",
+            age: 26,
+            bio: "Bookworm and movie buff. Looking for deep conversations and cozy nights in.",
+            tags: ["Reading", "Movies", "Coffee"],
+            image:
+              "https://images.unsplash.com/photo-1516726817505-f5ed825624d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=735&q=80",
+          },
+        ];
+
+        const cardsContainer = document.querySelector(".cards-container");
+        const emptyState = document.querySelector(".empty-state");
+        const likeBtn = document.querySelector(".like-btn");
+        const dislikeBtn = document.querySelector(".dislike-btn");
+        const superLikeBtn = document.querySelector(".super-like-btn");
+        const matchPopup = document.querySelector(".match-popup");
+        const keepSwipingBtn = document.querySelector(".keep-swiping");
+        const refreshBtn = document.querySelector(".refresh-btn");
+
+        let currentIndex = 0;
+        let isAnimating = false;
+
+        // Initialize cards
+        function initCards() {
+          cardsContainer.innerHTML = "";
+          currentIndex = 0;
+
+          if (users.length === 0) {
+            emptyState.style.display = "flex";
+            return;
+          }
+
+          emptyState.style.display = "none";
+
+          users.slice(0, 3).forEach((user, index) => {
+            createCard(user, index);
+          });
+
+          setupSwipeEvents();
+        }
+
+        // Create a card element
+        function createCard(user, index) {
+          const card = document.createElement("div");
+          card.className = `card card-${index + 1}`;
+          card.style.zIndex = 10 - index;
+          card.style.opacity = 1 - index * 0.1;
+          card.style.transform = `translateY(${index * 10}px) rotate(${
+            index % 2 === 0 ? 2 : -1
+          }deg)`;
+
+          card.innerHTML = `
+                    <div class="card-img" style="background-image: url('${
+                      user.image
+                    }')">
+                        <div class="indicator dislike-indicator"><i class="fas fa-times"></i></div>
+                        <div class="indicator like-indicator"><i class="fas fa-heart"></i></div>
+                    </div>
+                    <div class="card-info">
+                        <div class="name-age">${user.name} <span class="age">${
+            user.age
+          }</span></div>
+                        <div class="bio">${user.bio}</div>
+                        <div class="tags">
+                            ${user.tags
+                              .map((tag) => `<div class="tag">${tag}</div>`)
+                              .join("")}
+                        </div>
+                    </div>
+                `;
+
+          cardsContainer.appendChild(card);
+        }
+
+        // Setup swipe events for cards
+        function setupSwipeEvents() {
+          const cards = document.querySelectorAll(".card");
+          if (cards.length === 0) return;
+
+          const topCard = cards[0];
+          let startX, startY, moveX, moveY;
+
+          topCard.addEventListener("touchstart", handleStart);
+          topCard.addEventListener("mousedown", handleStart);
+
+          topCard.addEventListener("touchmove", handleMove);
+          topCard.addEventListener("mousemove", handleMove);
+
+          topCard.addEventListener("touchend", handleEnd);
+          topCard.addEventListener("mouseup", handleEnd);
+          topCard.addEventListener("mouseleave", handleEnd);
+
+          function handleStart(e) {
+            if (isAnimating) return;
+
+            const event = e.type === "touchstart" ? e.touches[0] : e;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            topCard.style.transition = "none";
+          }
+
+          function handleMove(e) {
+            if (!startX || !startY || isAnimating) return;
+
+            const event = e.type === "touchmove" ? e.touches[0] : e;
+            moveX = event.clientX - startX;
+            moveY = event.clientY - startY;
+
+            // Calculate rotation based on horizontal movement
+            const rotate = moveX * 0.1;
+
+            topCard.style.transform = `translate(${moveX}px, ${moveY}px) rotate(${rotate}deg)`;
+
+            // Show indicators based on direction
+            const likeIndicator = topCard.querySelector(".like-indicator");
+            const dislikeIndicator =
+              topCard.querySelector(".dislike-indicator");
+
+            if (moveX > 50) {
+              likeIndicator.style.opacity = Math.min(1, (moveX - 50) / 100);
+              likeIndicator.style.transform = "scale(1)";
+              dislikeIndicator.style.opacity = 0;
+            } else if (moveX < -50) {
+              dislikeIndicator.style.opacity = Math.min(1, (-moveX - 50) / 100);
+              dislikeIndicator.style.transform = "scale(1)";
+              likeIndicator.style.opacity = 0;
+            } else {
+              likeIndicator.style.opacity = 0;
+              dislikeIndicator.style.opacity = 0;
+            }
+          }
+
+          function handleEnd() {
+            if (!startX || !startY || isAnimating) return;
+
+            topCard.style.transition = "transform 0.5s ease, opacity 0.3s ease";
+
+            // Check if swipe is significant enough
+            if (moveX > 100) {
+              swipeRight();
+            } else if (moveX < -100) {
+              swipeLeft();
+            } else {
+              // Return to original position
+              topCard.style.transform = "translate(0, 0) rotate(0deg)";
+
+              const likeIndicator = topCard.querySelector(".like-indicator");
+              const dislikeIndicator =
+                topCard.querySelector(".dislike-indicator");
+              likeIndicator.style.opacity = 0;
+              dislikeIndicator.style.opacity = 0;
+            }
+
+            startX = startY = moveX = moveY = null;
+          }
+        }
+
+        // Swipe right (like)
+        function swipeRight() {
+          if (isAnimating) return;
+          isAnimating = true;
+
+          const topCard = document.querySelector(".card");
+          topCard.style.transform = "translate(500px, 0) rotate(30deg)";
+          topCard.style.opacity = "0";
+
+          createHearts(topCard);
+
+          setTimeout(() => {
+            topCard.remove();
+            currentIndex++;
+
+            // Check if we have more cards
+            if (currentIndex < users.length) {
+              const nextCard = document.querySelector(".card");
+              if (nextCard) {
+                nextCard.classList.add("card-1");
+                nextCard.classList.remove("card-2");
+                nextCard.style.transform = "translateY(0) rotate(0deg)";
+                nextCard.style.opacity = "1";
+
+                const nextNextCard =
+                  document.querySelector(".card:not(.card-1)");
+                if (nextNextCard) {
+                  nextNextCard.classList.add("card-2");
+                  nextNextCard.classList.remove("card-3");
+                  nextNextCard.style.transform =
+                    "translateY(10px) rotate(2deg)";
+                  nextNextCard.style.opacity = "0.9";
+
+                  // Add new card if available
+                  if (currentIndex + 2 < users.length) {
+                    createCard(users[currentIndex + 2], 2);
+                  }
+                }
+              }
+
+              setupSwipeEvents();
+            } else {
+              emptyState.style.display = "flex";
+            }
+
+            isAnimating = false;
+
+            // Random match event
+            if (Math.random() > 0.7) {
+              showMatchPopup();
+            }
+          }, 500);
+        }
+
+        // Swipe left (dislike)
+        function swipeLeft() {
+          if (isAnimating) return;
+          isAnimating = true;
+
+          const topCard = document.querySelector(".card");
+          topCard.style.transform = "translate(-500px, 0) rotate(-30deg)";
+          topCard.style.opacity = "0";
+
+          setTimeout(() => {
+            topCard.remove();
+            currentIndex++;
+
+            // Check if we have more cards
+            if (currentIndex < users.length) {
+              const nextCard = document.querySelector(".card");
+              if (nextCard) {
+                nextCard.classList.add("card-1");
+                nextCard.classList.remove("card-2");
+                nextCard.style.transform = "translateY(0) rotate(0deg)";
+                nextCard.style.opacity = "1";
+
+                const nextNextCard =
+                  document.querySelector(".card:not(.card-1)");
+                if (nextNextCard) {
+                  nextNextCard.classList.add("card-2");
+                  nextNextCard.classList.remove("card-3");
+                  nextNextCard.style.transform =
+                    "translateY(10px) rotate(2deg)";
+                  nextNextCard.style.opacity = "0.9";
+
+                  // Add new card if available
+                  if (currentIndex + 2 < users.length) {
+                    createCard(users[currentIndex + 2], 2);
+                  }
+                }
+              }
+
+              setupSwipeEvents();
+            } else {
+              emptyState.style.display = "flex";
+            }
+
+            isAnimating = false;
+          }, 500);
+        }
+
+        // Create floating hearts animation
+        function createHearts(card) {
+          const rect = card.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          for (let i = 0; i < 15; i++) {
+            const heart = document.createElement("div");
+            heart.className = "heart-animation";
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            heart.style.left = `${centerX - 50}px`;
+            heart.style.top = `${centerY - 50}px`;
+            heart.style.opacity = "1";
+            heart.style.color = i % 2 === 0 ? "#ff6b6b" : "#ff8e53";
+            document.body.appendChild(heart);
+
+            // Random movement
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 100 + Math.random() * 100;
+            const duration = 1000 + Math.random() * 500;
+
+            heart.animate(
+              [
+                { transform: `translate(0, 0) scale(1)`, opacity: 1 },
+                {
+                  transform: `translate(${Math.cos(angle) * distance}px, ${
+                    Math.sin(angle) * distance
+                  }px) scale(0.2)`,
+                  opacity: 0,
+                },
+              ],
+              {
+                duration: duration,
+                easing: "ease-out",
+              }
+            );
+
+            setTimeout(() => {
+              heart.remove();
+            }, duration);
+          }
+        }
+
+        // Show match popup
+        function showMatchPopup() {
+          matchPopup.style.opacity = "1";
+          matchPopup.style.pointerEvents = "all";
+
+          const content = matchPopup.querySelector(".match-content");
+          content.style.transform = "scale(1)";
+
+          // Create confetti
+          createConfetti();
+        }
+
+        // Create confetti animation
+        function createConfetti() {
+          for (let i = 0; i < 150; i++) {
+            const confetti = document.createElement("div");
+            confetti.className = "confetti";
+            confetti.style.left = `${Math.random() * 100}%`;
+            confetti.style.top = `${-10 + Math.random() * 20}%`;
+            confetti.style.backgroundColor = `hsl(${
+              Math.random() * 360
+            }, 100%, 60%)`;
+            confetti.style.opacity = "1";
+            document.body.appendChild(confetti);
+
+            // Animation
+            const duration = 2000 + Math.random() * 1000;
+
+            confetti.animate(
+              [
+                { transform: "translateY(0) rotate(0deg)", opacity: 1 },
+                {
+                  transform: `translateY(${
+                    100 + Math.random() * 50
+                  }vh) rotate(${360 + Math.random() * 360}deg)`,
+                  opacity: 0,
+                },
+              ],
+              {
+                duration: duration,
+                easing: "cubic-bezier(0,0.8,0.2,1)",
+              }
+            );
+
+            setTimeout(() => {
+              confetti.remove();
+            }, duration);
+          }
+        }
+
+        // Close match popup
+        function closeMatchPopup() {
+          matchPopup.style.opacity = "0";
+          matchPopup.style.pointerEvents = "none";
+
+          const content = matchPopup.querySelector(".match-content");
+          content.style.transform = "scale(0.8)";
+        }
+
+        // Event listeners
+        likeBtn.addEventListener("click", swipeRight);
+        dislikeBtn.addEventListener("click", swipeLeft);
+        superLikeBtn.addEventListener("click", () => {
+          // Super like animation
+          superLikeBtn.classList.add("pulse");
+          setTimeout(() => superLikeBtn.classList.remove("pulse"), 1000);
+
+          // Super like is just a like with extra animation
+          swipeRight();
+        });
+
+        keepSwipingBtn.addEventListener("click", closeMatchPopup);
+        refreshBtn.addEventListener("click", initCards);
+
+        // Initialize the app
+        initCards();
+      });
+    </script>
+  </body>
+</html>
