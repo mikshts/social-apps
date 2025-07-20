@@ -36,7 +36,7 @@
         title="Chat"
         class="chat-btn"
         onclick="openChat('{{ post.user.id }}')">
-        <span class="material-symbols-outlined">chat</span>
+        <i class="fas fa-comments"></i>
       </button>
     </span>
     {% endif %} {% if user == post.user %}
@@ -46,7 +46,7 @@
         title="Delete"
         style="all: unset; cursor: pointer"
         onclick="deletePost('{{ post.id }}')">
-        <span class="material-symbols-outlined">more_horiz</span>
+        <i class="fas fa-trash"></i>
       </button>
     </span>
     {% endif %}

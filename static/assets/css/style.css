@@ -144,7 +144,6 @@ nav .create {
   margin-top: 8.5rem;
   border-top: 1px solid var(--color-grey);
   font-size: 14px;
-
 }
 
 .footer-container {
@@ -166,7 +165,8 @@ nav .create {
   margin-bottom: 1rem;
 }
 
-.footer-links a, span {
+.footer-links a,
+span {
   color: var(--color-grey);
   text-decoration: none;
   margin: 0 5px;
@@ -268,9 +268,6 @@ main .container .left .profile {
   display: none;
 }
 
-.right {
-  overflow: visible;
-}
 .left .sidebar {
   margin-top: 1rem;
   background: var(--color-white);
@@ -821,6 +818,7 @@ main .container .left .profile {
   align-items: center;
   font-size: 1.4rem;
   margin: 0.6rem 0;
+  cursor: pointer;
 }
 
 .middle .liked-by {
@@ -1046,6 +1044,13 @@ main .container .left .profile {
   font-size: 1rem;
   font-weight: 500;
 }
+.right {
+  position: sticky;
+  top: var(--sticky-top-right);
+  height: calc(100vh - 5.4rem); /* same as before */
+  overflow-y: auto;
+  width: 260px; /* 👈 Make this smaller as needed (try 240px, 220px, etc.) */
+}
 
 #messages-panel {
   display: none;
@@ -1061,194 +1066,6 @@ main .container .left .profile {
   position: absolute;
   top: -6px;
   right: -8px;
-}
-
-/* =============== Messages ============== */
-.messages {
-  display: none;
-  /* rest of your styling... */
-}
-
-.message-list {
-  max-height: 300px; /* or any height you want */
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.message-list::-webkit-scrollbar {
-  width: 5px;
-}
-
-.message-list::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-}
-.right .messages {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* or a fixed height like 500px */
-}
-
-.message-list {
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.right .messages {
-  background: var(--color-white);
-  border-radius: var(--card-border-radius);
-  padding: var(--card-padding);
-}
-
-.right .messages .heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.right .messages i {
-  font-size: 1.4rem;
-}
-
-.right .messages .search-bar {
-  display: flex;
-  margin-bottom: 1rem;
-}
-
-.right .messages .category {
-  display: flex;
-  gap: 1rem; /* spacing between items */
-  overflow-x: auto;
-  white-space: nowrap;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  scrollbar-width: none; /* hide scrollbar in Firefox */
-}
-
-.right .messages .category::-webkit-scrollbar {
-  display: none; /* hide scrollbar in Chrome/Safari */
-}
-
-.right .messages .category h6 {
-  flex: 0 0 auto; /* prevent shrinking */
-  text-align: center;
-  border-bottom: 4px solid var(--color-light);
-  font-size: 0.75rem;
-  padding: 0.5rem 1rem; /* optional: more touch area */
-}
-.right .messages .category .active {
-  border-color: var(--color-dark);
-}
-
-.right .messages .message-requests {
-  color: var(--color-primary);
-}
-
-.right .messages .message {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  align-items: start;
-}
-
-.right .message .profile-photo {
-  position: relative;
-  overflow: visible;
-}
-
-.right .profile-photo img {
-  border-radius: 50%;
-}
-
-.right .messages .message:last-child {
-  margin: 0;
-}
-
-.right .messages .message p {
-  font-size: 0.8rem;
-}
-
-.right .messages .message .profile-photo .active {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 50%;
-  border: 3px solid var(--color-white);
-  background: var(--color-success);
-  position: absolute;
-  bottom: 0;
-  right: 0;
-}
-#message-float-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 50px;
-  padding: 10px 15px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-#message-float-button:hover {
-  background-color: var(--color-light);
-}
-
-/* =============== Friend Requests ============== */
-.right .friend-requests {
-  margin-top: 1rem;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 5px;
-  scrollbar-width: none; /* Firefox */
-  position: relative;
-}
-
-.right .friend-requests::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-.right .friend-requests h4 {
-  color: var(--color-grey);
-  margin: 1rem 0;
-  position: sticky;
-  top: 0;
-  background: var(--color-white); /* match your background */
-  z-index: 1;
-  padding: var(--card-padding); /* optional for spacing */
-}
-
-.right .friend-requests h4 {
-  color: var(--color-grey);
-  margin: 1rem 0;
-}
-
-.right .request {
-  background: var(--color-white);
-  padding: var(--card-padding);
-  border-radius: var(--card-border-radius);
-  margin-bottom: 0.7rem;
-}
-
-.right .request .info {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.right .request .action {
-  display: flex;
-  gap: 1rem;
-}
-.right {
-  position: sticky;
-  top: var(--sticky-top-right);
-  height: calc(100vh - 5.4rem); /* matches the navbar offset */
-  overflow-y: auto; /* ✅ allows internal scroll */
 }
 
 /*end of right---------------------------------*/
@@ -1661,32 +1478,12 @@ main .container .left .profile {
   }
 }
 
-/* ========== SMALL TABLETS & MOBILE PHONES (≤992px) ========== */
-@media screen and (max-width: 992px) {
-  nav .search-bar {
+/* ========== SMALL MOBILE DEVICES (≤480px) ========== */
+@media screen and (max-width: 480px) {
+  #search-input {
     display: none;
   }
 
-  main .container {
-    grid-template-columns: 0 auto;
-    gap: 0;
-  }
-
-  main .container .left {
-    display: none;
-  }
-
-  main .container .right {
-    display: none;
-  }
-
-  .customize-theme .card {
-    width: 80vw;
-  }
-}
-
-/* ========== MOBILE PHONES (≤768px) ========== */
-@media screen and (max-width: 768px) {
   .modal-feed {
     flex-direction: column;
     gap: 1rem;
@@ -1733,15 +1530,6 @@ main .container .left .profile {
     border-top: 1px solid var(--color-light);
   }
 
-  .middle .stories .story .story-profile {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-width: 2px;
-  }
-}
-
-/* ========== SMALL MOBILE DEVICES (≤480px) ========== */
-@media screen and (max-width: 480px) {
   main .container {
     display: flex;
     flex-direction: column;

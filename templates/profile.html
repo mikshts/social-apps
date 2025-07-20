@@ -6,6 +6,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ user.username }}'s Profile | PerfectMatch</title>
+    <link rel="stylesheet" href="{%static 'assets/css/friend_request.css' %}" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
@@ -307,20 +308,20 @@
           <div class="mb-6">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-semibold text-gray-700">Engagement Overview</h3>
-              <div class="text-xs text-gray-500 flex gap-2">
-                <span class="flex items-center"
-                  ><div class="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
-                  Visits</span
-                >
-                <span class="flex items-center"
-                  ><div class="w-3 h-3 bg-rose-500 rounded-full mr-1"></div>
-                  Likes</span
-                >
-                <span class="flex items-center"
-                  ><div class="w-3 h-3 bg-cyan-500 rounded-full mr-1"></div>
-                  Comments</span
-                >
-              </div>
+            </div>
+            <div class="text-xs text-gray-500 flex gap-2">
+              <span class="flex items-center"
+                ><div class="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+                Visits</span
+              >
+              <span class="flex items-center"
+                ><div class="w-3 h-3 bg-rose-500 rounded-full mr-1"></div>
+                Likes</span
+              >
+              <span class="flex items-center"
+                ><div class="w-3 h-3 bg-cyan-500 rounded-full mr-1"></div>
+                Comments</span
+              >
             </div>
             <canvas id="engagementChart" height="180"></canvas>
           </div>
@@ -345,182 +346,6 @@
       </aside>
 
       <!-- Add this to the bottom of your page -->
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script>
-        document.addEventListener("DOMContentLoaded", () => {
-          feather.replace();
-
-          // Engagement Chart
-          const ctx = document
-            .getElementById("engagementChart")
-            .getContext("2d");
-          const engagementChart = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-              datasets: [
-                {
-                  label: "Visits",
-                  data: [12, 19, 15, 22, 18, 24, 30],
-                  borderColor: "#3b82f6",
-                  backgroundColor: "rgba(59, 130, 246, 0.1)",
-                  tension: 0.4,
-                  fill: true,
-                },
-                {
-                  label: "Likes",
-                  data: [8, 12, 10, 15, 20, 18, 25],
-                  borderColor: "#ec4899",
-                  backgroundColor: "rgba(236, 72, 153, 0.1)",
-                  tension: 0.4,
-                  fill: true,
-                },
-                {
-                  label: "Comments",
-                  data: [3, 5, 7, 6, 9, 12, 15],
-                  borderColor: "#06b6d4",
-                  backgroundColor: "rgba(6, 182, 212, 0.1)",
-                  tension: 0.4,
-                  fill: true,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  display: false,
-                },
-                tooltip: {
-                  mode: "index",
-                  intersect: false,
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: {
-                    drawBorder: false,
-                  },
-                  ticks: {
-                    precision: 0,
-                  },
-                },
-                x: {
-                  grid: {
-                    display: false,
-                  },
-                },
-              },
-              interaction: {
-                mode: "nearest",
-                axis: "x",
-                intersect: false,
-              },
-              elements: {
-                point: {
-                  radius: 4,
-                  hoverRadius: 6,
-                },
-              },
-            },
-          });
-
-          // Time period filtering
-          document.querySelectorAll(".time-filter").forEach((button) => {
-            button.addEventListener("click", function () {
-              document.querySelectorAll(".time-filter").forEach((btn) => {
-                btn.classList.remove("active");
-              });
-              this.classList.add("active");
-
-              // Update chart based on selected period
-              const period = this.dataset.period;
-              let newData;
-
-              switch (period) {
-                case "week":
-                  newData = {
-                    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                    datasets: [
-                      { data: [12, 19, 15, 22, 18, 24, 30] },
-                      { data: [8, 12, 10, 15, 20, 18, 25] },
-                      { data: [3, 5, 7, 6, 9, 12, 15] },
-                    ],
-                  };
-                  break;
-                case "month":
-                  newData = {
-                    labels: ["Wk1", "Wk2", "Wk3", "Wk4"],
-                    datasets: [
-                      { data: [85, 92, 78, 95] },
-                      { data: [60, 72, 65, 80] },
-                      { data: [25, 30, 42, 50] },
-                    ],
-                  };
-                  break;
-                case "year":
-                  newData = {
-                    labels: [
-                      "Jan",
-                      "Feb",
-                      "Mar",
-                      "Apr",
-                      "May",
-                      "Jun",
-                      "Jul",
-                      "Aug",
-                      "Sep",
-                      "Oct",
-                      "Nov",
-                      "Dec",
-                    ],
-                    datasets: [
-                      {
-                        data: [
-                          320, 280, 300, 350, 380, 400, 420, 450, 430, 470, 490,
-                          520,
-                        ],
-                      },
-                      {
-                        data: [
-                          220, 200, 240, 280, 300, 320, 350, 380, 360, 390, 410,
-                          450,
-                        ],
-                      },
-                      {
-                        data: [
-                          80, 90, 110, 120, 130, 150, 160, 170, 180, 190, 210,
-                          230,
-                        ],
-                      },
-                    ],
-                  };
-                  break;
-              }
-
-              engagementChart.data.labels = newData.labels;
-              engagementChart.data.datasets.forEach((dataset, i) => {
-                dataset.data = newData.datasets[i].data;
-              });
-              engagementChart.update();
-            });
-          });
-
-          // Hover effect for cards
-          document.querySelectorAll(".analytics-card").forEach((card) => {
-            card.addEventListener("mouseenter", function () {
-              this.style.transform = "translateY(-5px)";
-              this.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.08)";
-            });
-
-            card.addEventListener("mouseleave", function () {
-              this.style.transform = "translateY(0)";
-              this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.05)";
-            });
-          });
-        });
-      </script>
 
       <style>
         .analytics-card {
@@ -639,79 +464,9 @@
           </div>
         </div>
       </section>
-
-      <!-- Right Sidebar -->
-      <div class="lg:col-span-3 space-y-6">
-        {% if friend_requests %}
-        <section class="bg-white rounded-xl shadow p-4">
-          <h2 class="text-lg font-semibold mb-3">Friend Requests</h2>
-          <div class="space-y-3">
-            {% for request in friend_requests %}
-            <div
-              id="friend-request-{{ request.id }}"
-              class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <img
-                  src="{{ request.from_user.profile.profileimg.url|default:'https://placehold.co/40x40?text=U' }}"
-                  class="w-10 h-10 rounded-full object-cover" />
-                <div>
-                  <p class="font-medium text-gray-800">
-                    {{ request.from_user.username }}
-                  </p>
-                </div>
-              </div>
-              <div class="flex space-x-2">
-                <!-- Change this in profile.html -->
-                <button onclick="respondRequest({{ request.id }}, 'accept')">
-                  Accept
-                </button>
-                <button onclick="respondRequest({{ request.id }}, 'decline')">
-                  Decline
-                </button>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </section>
-        {% endif %}
-
-        <!-- Friends List -->
-        <!-- friends_list.html -->
-        {% if is_own_profile %}
-        <section class="bg-white rounded-xl shadow p-4">
-          <div class="flex justify-between items-center mb-3">
-            <h2 class="text-lg font-semibold">My Friends</h2>
-            <a
-              href="{% url 'friends_list' %}"
-              class="text-blue-500 text-sm hover:underline"
-              >See All</a
-            >
-          </div>
-
-          {% if friends %}
-          <ul class="space-y-3">
-            {% for friend in friends|slice:":5" %}
-            <li class="flex items-center space-x-3">
-              <img
-                src="{% if friend.profileimg %}{{ friend.profileimg.url }}{% else %}{% static 'blank_profile_picture.png' %}{% endif %}"
-                alt="Friend Photo"
-                class="w-10 h-10 rounded-full object-cover border" />
-              <div>
-                <!-- Access username through friend.user -->
-                <h3 class="font-medium">{{ friend.user.username }}</h3>
-                <p class="text-xs text-gray-500">
-                  @{{ friend.user.username|slugify }}
-                </p>
-              </div>
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="text-sm text-gray-500 italic">No friends yet.</p>
-          {% endif %}
-        </section>
-        {% endif %}
-      </div>
+      <aside class="lg:col-span-3 space-y-6">
+        {% include 'friend_request.html'%}
+      </aside>
     </main>
 
     <!-- Modals -->
@@ -1143,6 +898,180 @@
           console.error("Error responding to friend request:", error);
         }
       }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        feather.replace();
+
+        // Engagement Chart
+        const ctx = document.getElementById("engagementChart").getContext("2d");
+        const engagementChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            datasets: [
+              {
+                label: "Visits",
+                data: [12, 19, 15, 22, 18, 24, 30],
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                tension: 0.4,
+                fill: true,
+              },
+              {
+                label: "Likes",
+                data: [8, 12, 10, 15, 20, 18, 25],
+                borderColor: "#ec4899",
+                backgroundColor: "rgba(236, 72, 153, 0.1)",
+                tension: 0.4,
+                fill: true,
+              },
+              {
+                label: "Comments",
+                data: [3, 5, 7, 6, 9, 12, 15],
+                borderColor: "#06b6d4",
+                backgroundColor: "rgba(6, 182, 212, 0.1)",
+                tension: 0.4,
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  drawBorder: false,
+                },
+                ticks: {
+                  precision: 0,
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+            interaction: {
+              mode: "nearest",
+              axis: "x",
+              intersect: false,
+            },
+            elements: {
+              point: {
+                radius: 4,
+                hoverRadius: 6,
+              },
+            },
+          },
+        });
+
+        // Time period filtering
+        document.querySelectorAll(".time-filter").forEach((button) => {
+          button.addEventListener("click", function () {
+            document.querySelectorAll(".time-filter").forEach((btn) => {
+              btn.classList.remove("active");
+            });
+            this.classList.add("active");
+
+            // Update chart based on selected period
+            const period = this.dataset.period;
+            let newData;
+
+            switch (period) {
+              case "week":
+                newData = {
+                  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                  datasets: [
+                    { data: [12, 19, 15, 22, 18, 24, 30] },
+                    { data: [8, 12, 10, 15, 20, 18, 25] },
+                    { data: [3, 5, 7, 6, 9, 12, 15] },
+                  ],
+                };
+                break;
+              case "month":
+                newData = {
+                  labels: ["Wk1", "Wk2", "Wk3", "Wk4"],
+                  datasets: [
+                    { data: [85, 92, 78, 95] },
+                    { data: [60, 72, 65, 80] },
+                    { data: [25, 30, 42, 50] },
+                  ],
+                };
+                break;
+              case "year":
+                newData = {
+                  labels: [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ],
+                  datasets: [
+                    {
+                      data: [
+                        320, 280, 300, 350, 380, 400, 420, 450, 430, 470, 490,
+                        520,
+                      ],
+                    },
+                    {
+                      data: [
+                        220, 200, 240, 280, 300, 320, 350, 380, 360, 390, 410,
+                        450,
+                      ],
+                    },
+                    {
+                      data: [
+                        80, 90, 110, 120, 130, 150, 160, 170, 180, 190, 210,
+                        230,
+                      ],
+                    },
+                  ],
+                };
+                break;
+            }
+
+            engagementChart.data.labels = newData.labels;
+            engagementChart.data.datasets.forEach((dataset, i) => {
+              dataset.data = newData.datasets[i].data;
+            });
+            engagementChart.update();
+          });
+        });
+
+        // Hover effect for cards
+        document.querySelectorAll(".analytics-card").forEach((card) => {
+          card.addEventListener("mouseenter", function () {
+            this.style.transform = "translateY(-5px)";
+            this.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.08)";
+          });
+
+          card.addEventListener("mouseleave", function () {
+            this.style.transform = "translateY(0)";
+            this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.05)";
+          });
+        });
+      });
     </script>
   </body>
 </html>

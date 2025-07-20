@@ -39,6 +39,12 @@ urlpatterns = [
     path('explore/', views.explore, name='explore'),
     path('toggle_bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
     path('bookmarks/', views.bookmark_list, name='bookmarks'),
+    path('toggle_bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
+    path('posts/<uuid:post_id>/modal/', views.post_detail_modal, name='post_detail_modal'),
+
+
+    path('stories/', views.swipe_story_view, name='swipe_story'),  # Renamed
+    path('stories/create/', views.create_story_post, name='create_story_post'),  # Renamed
 
     # Navigation and search
     path('search-users/', views.search_users, name='search-users'),
@@ -67,5 +73,7 @@ urlpatterns = [
 
     #for chat
     path('chat_templates/', views.chat_templates, name='chat_templates'),
+#===============sample/testing files=================
+    path('zample', views.zample, name='zample'),
 
 ]

@@ -1,0 +1,85 @@
+<!--POST_DETAIL_MODAL.HTML-->
+<div class="bookmark-modal-inner">
+  <div
+    style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px">
+    <img
+      src="{{ post.user.profile.profileimg.url }}"
+      alt=
+      style="
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      " />
+    <h3 style="margin: 0">{{ post.user.username }}'s Post</h3>
+  </div>
+
+  <!-- Post Content -->
+  <p style="margin: 5px 0">{{ post.caption }}</p>
+
+  {% if post.image %}
+  <img
+    src="{{ post.image.url }}"
+    alt="Post image"
+    style="width: 100%; border-radius: 8px; margin-top: 10px" />
+  {% endif %}
+
+  <!-- Likes / Bookmarks -->
+  <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px">
+    <span style="color: #e11d48; font-size: 1.2em">
+      ❤️ {{ post.likes.count }} Like{{ post.likes.count|pluralize }}
+    </span>
+    <span style="color: #6366f1">
+      🔖 {{ post.total_bookmarks }} Bookmark{{ post.total_bookmarks|pluralize }}
+    </span>
+  </div>
+
+  <!-- Comments -->
+  <div style="margin-top: 15px">
+    <strong>Comments:</strong>
+    {% if post.comments.all %}
+    <ul
+      id="comments-list-{{ post.id }}"
+      style="list-style: none; padding-left: 0; margin-top: 5px">
+      {% for comment in post.comments.all %}
+      <li
+        class="comment-item {% if forloop.counter > 2 %}hidden-comment-{{ post.id }} hidden{% endif %}"
+        style="margin-bottom: 5px">
+        <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if post.comments.count > 2 %}
+    <p
+      id="toggle-comments-{{ post.id }}"
+      class="toggle-comments-btn"
+      style="color: #6b7280; font-size: 0.9em; cursor: pointer"
+      onclick="toggleComments('{{ post.id }}', {{ post.comments.count }})">
+      View all {{ post.comments.count }} comments
+    </p>
+    {% endif %} {% else %}
+    <p style="color: #6b7280">No comments yet.</p>
+    {% endif %}
+  </div>
+</div>
+<script>
+  function toggleComments(postId, totalCount) {
+    const hiddenComments = document.querySelectorAll(
+      `.hidden-comment-${postId}`
+    );
+    const toggleBtn = document.getElementById(`toggle-comments-${postId}`);
+
+    hiddenComments.forEach((comment) => {
+      comment.classList.toggle("hidden");
+    });
+
+    if (hiddenComments[0].classList.contains("hidden")) {
+      toggleBtn.textContent = `View all ${totalCount} comments`;
+    } else {
+      toggleBtn.textContent = "Hide comments";
+    }
+  }
+</script>
+
+<!-- end for post_detail_modal-->

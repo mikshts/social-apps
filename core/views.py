@@ -30,6 +30,13 @@ from .models import (
 # social_book/core/views.py
 
 # Create your views here.
+from .models import FriendRequest, Profile
+
+
+def zample(request):
+    return render(request, 'zample.html')
+
+
 @login_required(login_url='signin')
 def index(request):
     if request.method == 'POST':
@@ -53,7 +60,19 @@ def index(request):
     for post in posts:
         post.liked_users = [like.user for like in post.likes.select_related('user')[:3]]
         post.user_liked = post.likes.filter(user=request.user).exists()
-    return render(request, 'index.html', {'posts': posts})
+
+    # Add these lines 👇
+    friend_requests = FriendRequest.objects.filter(to_user=request.user, is_accepted=False)
+    friends = request.user.profile.friends.all()[:5]
+    is_own_profile = True  # So the friend section shows
+
+    return render(request, 'index.html', {
+        'posts': posts,
+        'friend_requests': friend_requests,
+        'friends': friends,
+        'is_own_profile': is_own_profile,
+    })
+
 from django.shortcuts import render
 
 def survey_services(request):
@@ -680,7 +699,7 @@ def services(request):
 def terms(request):
     return render(request, 'terms.html')
 
-#===========  profile .html        views.py =============#
+#===========  profile .html views.py =============#
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -971,46 +990,53 @@ def survey(request):
 
     return render(request, 'survey.html')
 
-#bookmarks/views.py----
-
-
 @login_required
 def toggle_bookmark(request):
     if request.method == 'POST':
         post_id = request.POST.get('post_id')
-        post = Post.objects.get(id=post_id)
+        post = get_object_or_404(Post, id=post_id)
         bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
 
         if not created:
             bookmark.delete()
-            return JsonResponse({'status': 'removed'})
-        return JsonResponse({'status': 'added'})
+            return JsonResponse({'status': 'removed', 'bookmarks_count': post.total_bookmarks})
+        return JsonResponse({'status': 'added', 'bookmarks_count': post.total_bookmarks})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-from django.utils.timezone import now
-
-from django.utils.timezone import now
-
 @login_required
 def bookmark_list(request):
-    bookmarks = Bookmark.objects.filter(user=request.user).select_related('post__user', 'post__user__profile')
+    # Update user's last activity
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    profile.active_status_date = timezone.now()
+    profile.save()
+    
+    # Determine online status (within last 5 minutes)
+    five_min_ago = timezone.now() - timezone.timedelta(minutes=5)
+    online_user_ids = Profile.objects.filter(
+        active_status_date__gte=five_min_ago
+    ).values_list('user_id', flat=True)
 
+
+    
+    bookmarks = Bookmark.objects.filter(user=request.user).select_related(
+        'post__user', 'post__user__profile'
+    ).order_by('-created_at')
+    
     liked_post_ids = set(
         request.user.like_set.values_list('post_id', flat=True)
     )
-
+    
     # Attach custom attributes to each bookmark
     for bookmark in bookmarks:
-        bookmark.is_online = bookmark.post.user.profile.is_online
+        bookmark.is_online = bookmark.post.user.id in online_user_ids
         bookmark.is_liked = bookmark.post.id in liked_post_ids
-
+    
     return render(request, 'bookmarks.html', {
         'bookmarks': bookmarks,
     })
 
-
-#end of bookmarks ---
+@login_required
 def post_detail_modal(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     return render(request, 'posts/post_detail_modal.html', {'post': post})
@@ -1118,6 +1144,58 @@ def swipe_story(request):
     return render(request, 'swipe_story.html', {'story_index': story_index})
 
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import Story  # Import the new Story model
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import timedelta
+
+@login_required
+def swipe_story_view(request):
+    # Get active stories (not expired)
+    current_time = timezone.now()
+    active_stories = Story.objects.filter(
+        expires_at__gt=current_time
+    ).exclude(views=request.user)  # Exclude stories user has already viewed
+    
+    # Mark stories as viewed when displayed
+    for story in active_stories:
+        story.views.add(request.user)
+    
+    # Get profiles based on survey matching (your existing logic)
+    # This should be implemented based on your matching algorithm
+    return render(request, 'swipe_story.html', {
+        'active_stories': active_stories,
+        'current_time': current_time
+    })
+
+@login_required
+def create_story_post(request):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        caption = request.POST.get('caption', '')
+        
+        if not image:
+            return JsonResponse({'success': False, 'error': 'Image is required'})
+        
+        try:
+            # Create story with 24-hour expiration
+            story = Story.objects.create(
+                user=request.user,
+                image=image,
+                caption=caption,
+                expires_at=timezone.now() + timedelta(hours=24))
+            
+            return JsonResponse({
+                'success': True, 
+                'story_id': story.id,
+                'image_url': story.image.url
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 def chat_templates(request):
     return render(request, 'chat_templates.html') 

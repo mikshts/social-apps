@@ -1,236 +1,551 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PerfectMatch | Bookmarks</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" href="{%static 'assets/css/bookmark.css'%}">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet" />
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <style>
+      :root {
+        --primary: #4361ee;
+        --secondary: #3a0ca3;
+        --accent: #4cc9f0;
+        --danger: #f72585;
+        --success: #2ec4b6;
+        --warning: #ff9f1c;
+        --dark: #1a1a2e;
+        --darker: #16213e;
+        --light: #f8f9fa;
+        --gray: #6c757d;
+        --light-gray: #e9ecef;
+        --glass: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+        min-height: 100vh;
+        color: #e6e6e6;
+        padding: 20px;
+        top: auto;
+      }
+
+      /* Custom Navbar Styling */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        z-index: 1000; /* Higher than app container */
+      }
+
+      .nav-home-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .nav-user-info {
+        color: #777;
+        font-size: 14px;
+      }
+
+      /* Main Content Styles */
+      .bookmark-wrapper {
+        max-width: 800px;
+        margin: 100px auto 0; /* Push down to make space for navbar */
+        padding: 0 20px;
+      }
+
+      .bookmark-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        text-align: center;
+        color: var(--light);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Filter Bar Styles */
+      .filter-bar {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 10px 20px;
+        border-radius: 50px;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        color: var(--light);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+      }
+
+      .filter-btn:hover {
+        background: rgba(67, 97, 238, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .filter-btn.active {
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      }
+
+      /* Bookmark Card Styles */
+      .scroll-area {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+      }
+
+      .bookmark-card {
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--glass-border);
+        transform: translateY(0);
+        transition: all 0.3s ease;
+      }
+
+      .bookmark-card:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      .bookmark-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-photo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        border: 2px solid var(--accent);
+        box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
+      }
+
+      .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .user-info h3 {
+        color: var(--light);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .online-dot {
+        background: var(--success);
+        box-shadow: 0 0 8px rgba(46, 196, 182, 0.6);
+      }
+
+      .offline-dot {
+        background: var(--gray);
+      }
+
+      .delete-bookmark {
+        color: var(--light-gray);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 8px;
+        border-radius: 50%;
+      }
+
+      .delete-bookmark:hover {
+        color: var(--danger);
+        background: rgba(247, 37, 133, 0.1);
+        transform: rotate(15deg);
+      }
+
+      .bookmark-content {
+        padding: 20px;
+      }
+
+      .bookmark-content p {
+        color: var(--light-gray);
+        line-height: 1.6;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+      }
+
+      .view-post-btn {
+        display: block;
+        width: calc(100% - 40px);
+        margin: 0 20px 20px;
+        padding: 12px;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      }
+
+      .view-post-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+      }
+
+      /* No Bookmarks Message */
+      .no-bookmarks {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px;
+        color: var(--gray);
+        font-style: italic;
+        background: var(--glass);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+      }
+
+      /* Modal Styles */
+      .bookmark-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .bookmark-modal.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .close-bookmark-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .close-bookmark-btn:hover {
+        background: rgba(247, 37, 133, 0.3);
+        transform: rotate(90deg);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .scroll-area {
+          grid-template-columns: 1fr;
+        }
+
+        .bookmark-title {
+          font-size: 1.7rem;
+        }
+
+        .filter-bar {
+          gap: 10px;
+        }
+
+        .filter-btn {
+          padding: 8px 15px;
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .navbar {
+          padding: 12px 15px;
+        }
+
+        .bookmark-header {
+          padding: 15px;
+        }
+
+        .profile-photo {
+          width: 42px;
+          height: 42px;
+        }
+
+        .bookmark-content {
+          padding: 15px;
+        }
+
+        .view-post-btn {
+          margin: 0 15px 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
     <!-- Navbar -->
-    <nav class="navbar">
-        <a href="{%url 'index'%}" class="nav-home-link">
-            <i class="fas fa-arrow-left"></i>
-            <span>Home</span>
-        </a>
-        <div class="nav-user-info">Hi! I'm <strong>{{user.username}}</strong></div>
-    </nav>
+    {% include 'profile_navbar.html'%}
 
     <div class="bookmark-wrapper">
-        <div class="bookmark-title">Your Bookmarks</div>
+      <div class="bookmark-title">Your Bookmarks</div>
 
-        <div class="filter-bar">
-            <button class="filter-btn active">
-                All
-            </button>
-            <button class="filter-btn">
-                Online
-            </button>
-            <button class="filter-btn">Liked</button>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="online">Online</button>
+        <button class="filter-btn" data-filter="liked">Liked</button>
+      </div>
+
+      <div class="scroll-area" id="bookmarkContainer">
+        {% for bookmark in bookmarks %}
+        <div
+          class="bookmark-card"
+          data-post-id="{{ bookmark.post.id }}"
+          data-online="{{ bookmark.is_online|yesno:'true,false' }}"
+          data-liked="{{ bookmark.is_liked|yesno:'true,false' }}">
+          <div class="bookmark-header">
+            <div class="user-info">
+              <div class="profile-photo">
+                <img
+                  src="{{ bookmark.post.user.profile.profileimg.url }}"
+                  alt="{{ bookmark.post.user.username }}" />
+              </div>
+              <h3>
+                {{ bookmark.post.user.username }}
+                <span
+                  class="status-dot {% if bookmark.is_online %}online-dot{% else %}offline-dot{% endif %}"></span>
+              </h3>
+            </div>
+            <span class="delete-bookmark" data-post-id="{{ bookmark.post.id }}">
+              <i class="fas fa-trash-alt"></i>
+            </span>
+          </div>
+
+          <div class="bookmark-content">
+            <p>{{ bookmark.post.caption|truncatechars:150 }}</p>
+          </div>
+          <button class="view-post-btn" data-post-id="{{ bookmark.post.id }}">
+            View Post
+          </button>
         </div>
-
-        <div class="scroll-area" id="bookmarkContainer">
-            <div class="bookmark-card">
-                <div class="bookmark-header">
-                    <div class="user-info">
-                        <div class="profile-photo">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
-                        </div>
-                        <h3>
-                            SarahM 
-                            <span class="status-dot online-dot"></span>
-                        </h3>
-                    </div>
-                    <span class="delete-bookmark">
-                        <i class="fas fa-trash-alt"></i>
-                    </span>
-                </div>
-
-                <div class="bookmark-content">
-                    <p>Just finished my morning hike! The view was absolutely breathtaking. Nature always has a way of putting things in perspective. #HikingAdventures #NatureLover</p>
-                </div>
-                <button class="view-post-btn">
-                    View Post
-                </button>
-            </div>
-            
-            <div class="bookmark-card">
-                <div class="bookmark-header">
-                    <div class="user-info">
-                        <div class="profile-photo">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
-                        </div>
-                        <h3>
-                            MikeT 
-                            <span class="status-dot offline-dot"></span>
-                        </h3>
-                    </div>
-                    <span class="delete-bookmark">
-                        <i class="fas fa-trash-alt"></i>
-                    </span>
-                </div>
-
-                <div class="bookmark-content">
-                    <p>My new photography project is coming along nicely. Capturing urban landscapes at golden hour creates such magical lighting. Can't wait to share the final collection!</p>
-                </div>
-                <button class="view-post-btn">
-                    View Post
-                </button>
-            </div>
-            
-            <div class="bookmark-card">
-                <div class="bookmark-header">
-                    <div class="user-info">
-                        <div class="profile-photo">
-                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User">
-                        </div>
-                        <h3>
-                            JessicaL 
-                            <span class="status-dot online-dot"></span>
-                        </h3>
-                    </div>
-                    <span class="delete-bookmark">
-                        <i class="fas fa-trash-alt"></i>
-                    </span>
-                </div>
-
-                <div class="bookmark-content">
-                    <p>Just tried this amazing new vegan recipe - cauliflower buffalo wings! They're so crispy and flavorful, even meat-eaters would love them. Recipe in comments!</p>
-                </div>
-                <button class="view-post-btn">
-                    View Post
-                </button>
-            </div>
+        {% empty %}
+        <div class="no-bookmarks">
+          <i
+            class="far fa-bookmark"
+            style="font-size: 3rem; margin-bottom: 15px"></i>
+          <h3>No Bookmarks Yet</h3>
+          <p>Start bookmarking posts to see them here!</p>
         </div>
+        {% endfor %}
+      </div>
     </div>
 
     <!-- Modal -->
     <div id="bookmarkPostModal" class="bookmark-modal">
-        <div class="bookmark-modal-content">
-            <button class="close-bookmark-btn">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="bookmark-modal-inner">
-                <!-- Profile + Username -->
-                <div class="modal-header">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="SarahM">
-                    <h3>SarahM <span>posted</span></h3>
-                </div>
-
-                <!-- Post Content -->
-                <div class="post-content">
-                    <p>Just finished my morning hike! The view was absolutely breathtaking. Nature always has a way of putting things in perspective. #HikingAdventures #NatureLover</p>
-                </div>
-
-                <!-- Post Image -->
-                <div class="post-image">
-                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" alt="Mountain view">
-                </div>
-
-                <!-- Likes / Bookmarks -->
-                <div class="post-stats">
-                    <div class="post-stat likes">
-                        <i class="fas fa-heart"></i>
-                        <span>248 Likes</span>
-                    </div>
-                    <div class="post-stat bookmarks">
-                        <i class="fas fa-bookmark"></i>
-                        <span>42 Bookmarks</span>
-                    </div>
-                </div>
-
-                <!-- Comments -->
-                <div class="comments-section">
-                    <h4>Comments:</h4>
-                    <ul class="comments-list">
-                        <li class="comment-item">
-                            <div class="avatar">
-                                <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="User" style="width:100%;height:100%;object-fit:cover;">
-                            </div>
-                            <div class="comment-content">
-                                <strong>TravelerTom:</strong> Amazing view! Which trail is this?
-                            </div>
-                        </li>
-                        <li class="comment-item">
-                            <div class="avatar">
-                                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="User" style="width:100%;height:100%;object-fit:cover;">
-                            </div>
-                            <div class="comment-content">
-                                <strong>NatureLover99:</strong> This is stunning! The colors are incredible 😍
-                            </div>
-                        </li>
-                        <li class="comment-item">
-                            <div class="avatar">
-                                <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="User" style="width:100%;height:100%;object-fit:cover;">
-                            </div>
-                            <div class="comment-content">
-                                <strong>AdventureSeeker:</strong> I was there last month! Did you make it to the summit?
-                            </div>
-                        </li>
-                    </ul>
-
-                    <button class="toggle-comments-btn">
-                        <span>View all 8 comments</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-            </div>
+      <div class="bookmark-modal-content">
+        <button class="close-bookmark-btn">
+          <i class="fas fa-times"></i>
+        </button>
+        <div id="modalContent">
+          <!-- Content will be loaded here via AJAX -->
         </div>
+      </div>
     </div>
 
     <script>
-        // Toggle modal function
-        function toggleModal() {
-            const modal = document.getElementById('bookmarkPostModal');
-            modal.classList.toggle('active');
-        }
+      // Toggle modal function
+      function toggleModal() {
+        const modal = document.getElementById("bookmarkPostModal");
+        modal.classList.toggle("active");
+      }
 
-        // Open modal when clicking view buttons
-        document.querySelectorAll('.view-post-btn').forEach(button => {
-            button.addEventListener('click', toggleModal);
-        });
+      // Open modal when clicking view buttons
+      document.querySelectorAll(".view-post-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+          const postId = this.dataset.postId;
 
-        // Close modal when clicking close button
-        document.querySelector('.close-bookmark-btn').addEventListener('click', toggleModal);
+          // Show loading state
+          document.getElementById("modalContent").innerHTML = `
+                    <div style="padding: 50px; text-align: center; color: #e9ecef;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 20px;"></i>
+                        <p>Loading post...</p>
+                    </div>
+                `;
 
-        // Close modal when clicking outside content
-        document.getElementById('bookmarkPostModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                toggleModal();
-            }
-        });
+          toggleModal();
 
-        // Toggle comments function
-        document.querySelector('.toggle-comments-btn').addEventListener('click', function() {
-            this.classList.toggle('active');
-            const text = this.classList.contains('active') ? 'Hide comments' : 'View all 8 comments';
-            this.querySelector('span').textContent = text;
-        });
-
-        // Filter buttons active state
-        document.querySelectorAll('.filter-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
+          // Fetch post content
+          fetch(`/posts/${postId}/modal/`)
+            .then((response) => response.text())
+            .then((html) => {
+              document.getElementById("modalContent").innerHTML = html;
+            })
+            .catch((error) => {
+              console.error("Error loading post:", error);
+              document.getElementById("modalContent").innerHTML = `
+                            <div style="padding: 50px; text-align: center; color: #e9ecef;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 20px;"></i>
+                                <p>Failed to load post. Please try again.</p>
+                            </div>
+                        `;
             });
         });
+      });
 
-        // Delete bookmark function
-        document.querySelectorAll('.delete-bookmark').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.bookmark-card');
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(-20px)';
+      // Close modal when clicking close button
+      document
+        .querySelector(".close-bookmark-btn")
+        .addEventListener("click", toggleModal);
+
+      // Close modal when clicking outside content
+      document
+        .getElementById("bookmarkPostModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            toggleModal();
+          }
+        });
+
+      // Delete bookmark function
+      document.querySelectorAll(".delete-bookmark").forEach((button) => {
+        button.addEventListener("click", function () {
+          const postId = this.dataset.postId;
+          const card = this.closest(".bookmark-card");
+
+          // Send AJAX request to delete bookmark
+          fetch("/toggle_bookmark/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ post_id: postId }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "removed") {
+                // Animate removal
+                card.style.opacity = "0";
+                card.style.transform = "translateY(-20px)";
                 setTimeout(() => {
-                    card.remove();
+                  card.remove();
+
+                  // If no bookmarks left, show message
+                  if (
+                    document.querySelectorAll(".bookmark-card").length === 0
+                  ) {
+                    document.getElementById("bookmarkContainer").innerHTML = `
+                                    <div class="no-bookmarks">
+                                        <i class="far fa-bookmark" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                                        <h3>No Bookmarks Left</h3>
+                                        <p>Your bookmarks have been cleared</p>
+                                    </div>
+                                `;
+                  }
                 }, 300);
+              }
             });
         });
+      });
+
+      // Filter buttons active state and functionality
+      document.querySelectorAll(".filter-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+          // Update active state
+          document.querySelectorAll(".filter-btn").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+          this.classList.add("active");
+
+          const filter = this.dataset.filter;
+          const cards = document.querySelectorAll(".bookmark-card");
+
+          cards.forEach((card) => {
+            switch (filter) {
+              case "all":
+                card.style.display = "block";
+                break;
+              case "online":
+                if (card.dataset.online === "true") {
+                  card.style.display = "block";
+                } else {
+                  card.style.display = "none";
+                }
+                break;
+              case "liked":
+                if (card.dataset.liked === "true") {
+                  card.style.display = "block";
+                } else {
+                  card.style.display = "none";
+                }
+                break;
+            }
+          });
+        });
+      });
     </script>
-</body>
+  </body>
 </html>

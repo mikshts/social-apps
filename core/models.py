@@ -212,3 +212,22 @@ class FriendRequest(models.Model):
 
     def __str__(self):
         return f"{self.from_user.username} → {self.to_user.username} ({'Accepted' if self.is_accepted else 'Pending'})"
+
+
+# Stories model
+class Story(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stories')
+    image = models.ImageField(upload_to='story_images/')
+    caption = models.TextField(blank=True, max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    views = models.ManyToManyField(User, related_name='viewed_stories', blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s story - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    def save(self, *args, **kwargs):
+        # Set expiration to 24 hours after creation
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timezone.timedelta(hours=24)
+        super().save(*args, **kwargs)

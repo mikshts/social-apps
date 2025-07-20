@@ -1,20 +1,65 @@
-{% for request in friend_requests %}
-  <div id="friend-request-{{ request.id }}" class="flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <img src="{{ request.from_user.profile.profileimg.url|default:'https://placehold.co/40x40?text=U' }}"
-           class="w-10 h-10 rounded-full object-cover" />
-      <div>
-        <p class="font-medium text-gray-800">{{ request.from_user.username }}</p>
-        <p class="text-gray-500 text-xs">{{ request.mutual_friends_count|default:'0' }} mutual friends</p>
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/friend_request.css' %}" />
+
+<!-- Right Sidebar -->
+<div class="right-sidebar">
+  {% if friend_requests %}
+  <section class="card">
+    <h2 class="section-title">Friend Requests</h2>
+    <!-- NOTE: No friend requests message -->
+    <p
+      id="noRequestsMsg"
+      class="no-requests-message {% if friend_requests %}hidden{% endif %}">
+      No friend requests yet.
+    </p>
+    <div class="request-list">
+      {% for request in friend_requests %}
+      <div class="friend-request" id="friend-request-{{ request.id }}">
+        <div class="user-info">
+          <img
+            src="{{ request.from_user.profile.profileimg.url|default:'https://placehold.co/40x40?text=U' }}"
+            class="profile-img" />
+          <div>
+            <p class="username">{{ request.from_user.username }}</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="respondRequest({{ request.id }}, 'accept')">
+            Accept
+          </button>
+          <button onclick="respondRequest({{ request.id }}, 'decline')">
+            Decline
+          </button>
+        </div>
       </div>
+      {% endfor %}
     </div>
-    <div class="flex space-x-2">
-      <button onclick="respondRequest({{ request.id }}, 'accept')"
-              class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">Accept</button>
-      <button onclick="respondRequest({{ request.id }}, 'decline')"
-              class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-3 py-1 rounded-md">Decline</button>
+  </section>
+  {% endif %} {% if is_own_profile %}
+  <section class="card">
+    <div class="friends-header">
+      <h2 class="section-title">My Friends</h2>
+      <a href="{% url 'friends_list' %}" class="see-all">See All</a>
     </div>
-  </div>  
-{% empty %}
-  <p class="text-sm text-gray-500 italic">No pending requests.</p>
-{% endfor %}
+
+    {% if friends %}
+    <ul class="friends-list">
+      {% for friend in friends|slice:":5" %}
+      <li class="friend-item">
+        <img
+          src="{% if friend.profileimg %}{{ friend.profileimg.url }}{% else %}{% static 'blank_profile_picture.png' %}{% endif %}"
+          alt="Friend Photo"
+          class="profile-img" />
+        <div>
+          <h3 class="username">{{ friend.user.username }}</h3>
+          <p class="user-handle">@{{ friend.user.username|slugify }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="no-friends">No friends yet.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
